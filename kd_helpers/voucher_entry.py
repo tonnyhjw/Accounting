@@ -10,6 +10,7 @@ class voucherEntry():
 
     def open_entrance(self):
         """打开《凭证录入》界面"""
+        double_hotkey(hotkey_1="alt", hotkey_2="tab")
         double_hotkey(hotkey_1="ctrl", hotkey_2="v")
         double_hotkey(hotkey_1="alt", hotkey_2="v")
         double_hotkey(hotkey_1="alt", hotkey_2="b")

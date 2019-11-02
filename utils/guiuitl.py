@@ -15,5 +15,5 @@ def run_experiment():
 def double_hotkey(hotkey_1=None, hotkey_2=None):
     if not hotkey_1 or not hotkey_2:
         print("Hot key missing!!!")
-    pag.hotkey(hotkey_1, hotkey_2)
+    pag.hotkey(hotkey_1, hotkey_2, interval=0.1)
     return
