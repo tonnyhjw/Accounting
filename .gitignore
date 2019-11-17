@@ -109,3 +109,6 @@ venv.bak/
 # datafiles
 *.xls
 *.xlsx
+*.xlk
+*.png
+*.jpg
