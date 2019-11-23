@@ -8,12 +8,12 @@ from utils.models import Invoice
 from utils.mongoapi import aggregate_data
 
 """
-销项发票凭证生成
+进项发票凭证生成
 """
 
 log = get_logger(__name__, level=10)
 
-class VoucherInvoiceSale(VoucherBase):
+class VoucherInvoiceBuy(VoucherBase):
     model_sub_dir = "xlsx_model/记账凭证模板.xlsx"
 
     def __init__(self, company_name, object_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
@@ -21,12 +21,12 @@ class VoucherInvoiceSale(VoucherBase):
         self.object_name = object_name
         self.output_dir = os.path.join(self.output_dir, self.company_name)
         self.begin_date, self.end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
-        self.load_model(output_filename="销项发票凭证-"+self.object_name)
+        self.load_model(output_filename="进项发票凭证-"+self.object_name)
 
     def sum_price(self):
         """填写总收入"""
         pipeline = []
-        match = {"$match": {"company_name":self.company_name, "object_name":self.object_name, "invoice_type": "sale",
+        match = {"$match": {"company_name":self.company_name, "object_name":self.object_name, "invoice_type": "buy",
                             "billing_date": {"$gte": self.begin_date, "$lt": self.end_date}}}
         group = {"$group": {"_id": "$object_name", "total": {"$sum": '$sum_price'}}}
         pipeline.append(match)
@@ -34,15 +34,15 @@ class VoucherInvoiceSale(VoucherBase):
         # pprint(pipeline)
         self.sum_price_of_object = aggregate_data(Invoice, pipeline)[0]['total']
         log.debug(self.sum_price_of_object)
-        self.model.write_cell(7, 2, "销售收入")
-        self.model.write_cell(7, 4, "主营业务收入")
-        self.model.write_cell(7, 7, self.sum_price_of_object)
+        self.model.write_cell(6, 2, "购入")
+        self.model.write_cell(6, 4, "库存商品")
+        self.model.write_cell(6, 6, self.sum_price_of_object)
         return self.sum_price
 
     def tax(self):
         """填写应交税费"""
         pipeline = []
-        match = {"$match": {"company_name":self.company_name, "object_name":self.object_name, "invoice_type": "sale",
+        match = {"$match": {"company_name":self.company_name, "object_name":self.object_name, "invoice_type": "buy",
                             "billing_date": {"$gte": self.begin_date, "$lt": self.end_date}}}
         group = {"$group": {"_id": "$object_name", "total": {"$sum": '$tax'}}}
         pipeline.append(match)
@@ -50,19 +50,18 @@ class VoucherInvoiceSale(VoucherBase):
         # pprint(pipeline)
         self.tax_of_object = aggregate_data(Invoice, pipeline)[0]['total']
         log.debug(self.tax_of_object)
-        self.model.write_cell(8, 2, "销项税")
-        self.model.write_cell(8, 4, "应交税费")
-        self.model.write_cell(8, 5, "应交增值税-销项税")
-        self.model.write_cell(8, 7, self.tax_of_object)
+        self.model.write_cell(7, 2, "进项税")
+        self.model.write_cell(7, 4, "应交税费")
+        self.model.write_cell(7, 5, "应交增值税-进项税")
+        self.model.write_cell(7, 6, self.tax_of_object)
         return self.sum_price
 
     def object_loan(self):
         """填写应收账款"""
-        self.model.write_cell(6, 2, "销售")
-        self.model.write_cell(6, 4, "应收账款")
-        self.model.write_cell(6, 5, self.object_name)
-        self.model.write_cell(6, 6, self.sum_price_of_object+self.tax_of_object)
-
+        self.model.write_cell(8, 2, "应付")
+        self.model.write_cell(8, 4, "应付账款")
+        self.model.write_cell(8, 5, self.object_name)
+        self.model.write_cell(8, 7, self.sum_price_of_object+self.tax_of_object)
 
     def build_vocher(self):
         """"""
@@ -76,5 +75,5 @@ class VoucherInvoiceSale(VoucherBase):
 
 
 if __name__ == '__main__':
-    vs = VoucherInvoiceSale('广州南方化玻医疗器械有限公司', "广州市中医医院", 2019, 10, 1, 2019, 10, 31)
+    vs = VoucherInvoiceBuy('广州南方化玻医疗器械有限公司', "广州市侨鑫医疗器械科技发展有限公司", 2019, 1, 1, 2019, 10, 31)
     vs.build_vocher()
