@@ -90,7 +90,7 @@ class Invoice(Document):
 
     def json(self):
         invoice_dict = {
-            "company": self.company,
+            "company_name": self.company_name,
             "invoice_code": self.invoice_code,
             "invoice_num": self.invoice_num,
             "object_name": self.object_name,

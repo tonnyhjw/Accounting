@@ -60,10 +60,6 @@ class BankStatementApi():
             return datetime.strptime(input_time, "%Y%m%d %H:%M:%S")
 
 
-
-
-
-
 class InvoiceBaseApi():
     input_dir = None
     row_start = 0
@@ -82,7 +78,7 @@ class InvoiceBaseApi():
         for filename in os.listdir(invoice_xlsx_dir):
             filepath = os.path.join(invoice_xlsx_dir, filename)
             log.debug(filepath)
-            xl = Xlsx(filepath)
+            xl = self.read_excel(filepath)
             xl_content = xl.contents(row_start=self.row_start, end_before_last_row=self.end_before_last_row)
 
             try:
@@ -95,11 +91,13 @@ class InvoiceBaseApi():
         log.info("Not defined")
         return
 
-
     @staticmethod
     def time_fmt(input_time):
         if isinstance(input_time, str):
             return datetime.strptime(input_time, "%Y-%m-%d")
+
+    def read_excel(self, filepath):
+        return Xlsx(filepath)
 
 class InvoiceSaleApi(InvoiceBaseApi):
     invoice_code = 0  # 发票代码
@@ -117,7 +115,7 @@ class InvoiceSaleApi(InvoiceBaseApi):
     tax_category_code = 17  # 税收分类编码
     input_dir = "input/invoice/sale"
     invoice_type = "sale"
-    row_start = 6
+    row_start = 7
     end_before_last_row = 2
 
     def insert_one_xlsx(self, xl_contents):
@@ -164,7 +162,7 @@ class InvoiceBuyApi(InvoiceBaseApi):
     # tax_category_code = 17  # 税收分类编码
     input_dir = "input/invoice/buy"
     invoice_type = "buy"
-    row_start = 3
+    row_start = 4
     end_before_last_row = 0
 
     def insert_one_xlsx(self, xl_contents):
@@ -179,6 +177,13 @@ class InvoiceBuyApi(InvoiceBaseApi):
                     object_name=row[self.object_name], object_tax_num=row[self.object_tax_num], billing_date=billing_date,
                     sum_price=sum_price, tax_rate=tax/sum_price, tax=tax, invoice_type=self.invoice_type).save()
         return
+
+    def read_excel(self, filepath):
+        return Xls(filepath)
+
+def aggregate_data(table, pipeline):
+    return list(table.objects.aggregate(*pipeline))
+
 
 if __name__ == '__main__':
     # bsa = BankStatementApi(company="广州南方化玻医疗器械有限公司")
