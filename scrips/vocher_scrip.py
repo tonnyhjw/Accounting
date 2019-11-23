@@ -50,4 +50,4 @@ def vocher_scrip_buy(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_
 
 if __name__ == '__main__':
     vocher_scrip_sale('广州南方化玻医疗器械有限公司', 2019, 10, 1, 2019, 10, 31)
-    vocher_scrip_buy('广州南方化玻医疗器械有限公司', 2019, 1, 1, 2019, 10, 31)
+    vocher_scrip_buy('广州南方化玻医疗器械有限公司', 2019, 10, 1, 2019, 10, 31)

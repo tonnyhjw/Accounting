@@ -50,7 +50,7 @@ class VoucherBase():
 
     def write_end_date(self):
         try:
-            self.model.write_cell(3, 5, "{} 年 {} 月 {} 日".format(self.end_y, self.end_m, self.end_d))
+            self.model.write_cell(3, 4, "{} 年 {} 月 {} 日".format(self.end_date.year, self.end_date.month, self.end_date.day))
         except Exception as e:
             log.critical(e)
         return

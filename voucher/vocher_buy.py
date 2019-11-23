@@ -27,7 +27,7 @@ class VoucherInvoiceBuy(VoucherBase):
         """填写总收入"""
         pipeline = []
         match = {"$match": {"company_name":self.company_name, "object_name":self.object_name, "invoice_type": "buy",
-                            "billing_date": {"$gte": self.begin_date, "$lt": self.end_date}}}
+                            "belong_date": {"$gte": self.begin_date, "$lt": self.end_date}}}
         group = {"$group": {"_id": "$object_name", "total": {"$sum": '$sum_price'}}}
         pipeline.append(match)
         pipeline.append(group)
@@ -43,7 +43,7 @@ class VoucherInvoiceBuy(VoucherBase):
         """填写应交税费"""
         pipeline = []
         match = {"$match": {"company_name":self.company_name, "object_name":self.object_name, "invoice_type": "buy",
-                            "billing_date": {"$gte": self.begin_date, "$lt": self.end_date}}}
+                            "belong_date": {"$gte": self.begin_date, "$lt": self.end_date}}}
         group = {"$group": {"_id": "$object_name", "total": {"$sum": '$tax'}}}
         pipeline.append(match)
         pipeline.append(group)
@@ -75,5 +75,5 @@ class VoucherInvoiceBuy(VoucherBase):
 
 
 if __name__ == '__main__':
-    vs = VoucherInvoiceBuy('广州南方化玻医疗器械有限公司', "广州市侨鑫医疗器械科技发展有限公司", 2019, 1, 1, 2019, 10, 31)
+    vs = VoucherInvoiceBuy('广州南方化玻医疗器械有限公司', "广州市侨鑫医疗器械科技发展有限公司", 2019, 10, 1, 2019, 10, 31)
     vs.build_vocher()

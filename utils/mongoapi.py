@@ -84,7 +84,7 @@ class InvoiceBaseApi():
             try:
                 self.insert_one_xlsx(xl_content)
             except Exception as e:
-                log.critical("error occur :{}".format(e))
+                log.critical("error occur: {}".format(e))
                 continue
 
     def insert_one_xlsx(self, xl_contents):
@@ -151,11 +151,9 @@ class InvoiceBuyApi(InvoiceBaseApi):
     invoice_num = 2  # 发票号码
     object_name = 5  # 销方企业名称
     object_tax_num = 4  # 购方税号
-    # bank_account = 4  # 银行账号
     billing_date = 3  # 开票日期
-    # merchandise_name = 9  # 商品名称
-    # merchandise_amount = 12  # 数量
-    # unit_price = 13  # 单价
+    select_date = 9   # 勾选日期
+    belong_date = (1, 7)
     sum_price = 6  # 金额
     # tax_rate = 15  # 税率
     tax = 7  # 税额
@@ -166,20 +164,26 @@ class InvoiceBuyApi(InvoiceBaseApi):
     end_before_last_row = 0
 
     def insert_one_xlsx(self, xl_contents):
+
+        belong_date = datetime.strptime(self.xls.sheet_r.row_values(self.belong_date[0])[self.belong_date[1]]+"30", "%Y%m%d")
+        log.debug("belong date: {}".format(belong_date))
         for row in xl_contents:
             log.debug("row :{}".format(row))
 
             billing_date = self.time_fmt(row[self.billing_date])
+            select_date = self.time_fmt(row[self.select_date])
             sum_price = float(row[self.sum_price]) if row[self.sum_price] else 0
             tax = float(row[self.tax]) if row[self.tax] else 0
 
             Invoice(company_name=self.company_name, invoice_code=row[self.invoice_code], invoice_num=row[self.invoice_num],
                     object_name=row[self.object_name], object_tax_num=row[self.object_tax_num], billing_date=billing_date,
-                    sum_price=sum_price, tax_rate=tax/sum_price, tax=tax, invoice_type=self.invoice_type).save()
+                    sum_price=sum_price, tax_rate=tax/sum_price, tax=tax, invoice_type=self.invoice_type,
+                    belong_date=belong_date, select_date=select_date).save()
         return
 
     def read_excel(self, filepath):
-        return Xls(filepath)
+        self.xls = Xls(filepath)
+        return self.xls
 
 def aggregate_data(table, pipeline):
     return list(table.objects.aggregate(*pipeline))
@@ -188,7 +192,7 @@ def aggregate_data(table, pipeline):
 if __name__ == '__main__':
     # bsa = BankStatementApi(company="广州南方化玻医疗器械有限公司")
     # bsa.insert_all()
-    isa = InvoiceSaleApi("广州南方化玻医疗器械有限公司")
-    isa.insert_all()
-    # iba = InvoiceBuyApi("广州南方化玻医疗器械有限公司")
-    # iba.insert_all()
+    # isa = InvoiceSaleApi("广州南方化玻医疗器械有限公司")
+    # isa.insert_all()
+    iba = InvoiceBuyApi("广州南方化玻医疗器械有限公司")
+    iba.insert_all()

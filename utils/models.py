@@ -87,6 +87,8 @@ class Invoice(Document):
     tax = FloatField(required=True)                     # 税额
     tax_category_code = StringField()                   # 税收分类编码
     invoice_type = StringField(required=True)           # 发票类型（销项发票、进项发票等）
+    select_date = DateTimeField()                       # 勾选日期
+    belong_date = DateTimeField()                       # 所属月份
 
     def json(self):
         invoice_dict = {
