@@ -4,7 +4,7 @@ from pprint import pprint
 
 from voucher import *
 from utils import get_logger
-from utils.models import Invoice
+from utils.models import BankStatement
 from utils.mongoapi import aggregate_data
 
 """
@@ -13,7 +13,7 @@ from utils.mongoapi import aggregate_data
 
 log = get_logger(__name__, level=10)
 
-class VoucherInvoiceBankstatemetn(VoucherBase):
+class VoucherInvoiceBankstatement(VoucherBase):
     model_sub_dir = "xlsx_model/记账凭证模板.xlsx"
 
     def __init__(self, company_name, object_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
@@ -21,7 +21,41 @@ class VoucherInvoiceBankstatemetn(VoucherBase):
         self.object_name = object_name
         self.output_dir = os.path.join(self.output_dir, self.company_name)
         self.begin_date, self.end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
-        self.load_model(output_filename="进项发票凭证-"+self.object_name)
+        self.model = None
+        self.output_filename = None
+
+    def load_by_object_name(self):
+        """按对方户名导入"""
+        match = {"$match": {"company_name": self.company_name, "object_name": self.object_name,
+                            "operation_time": {"$gte": self.begin_date, "$lt": self.end_date}}}
+
+        if self.object_name:
+            log.debug("loading object:{}".format(self.object_name))
+            group = {"$group": {"_id": "$object_name",
+                                "object_income": {"$sum": '$income'},
+                                "object_outcome": {"$sum": '$outcome'}}}
+            self.object_io = aggregate_data(BankStatement, [match, group])
+            self.output_filename = "银行凭证-" + self.object_name
+            pprint(self.object_io)
+        else:
+            log.debug("loading other expense data")
+            group = {"$group": {"_id": "$abstract",
+                                "object_income": {"$sum": '$income'},
+                                "object_outcome": {"$sum": '$outcome'}}}
+            self.object_io = aggregate_data(BankStatement, [match, group])
+            self.output_filename = "银行凭证-其他费用"
+            pprint(self.object_io)
+        return
+
+    def income(self):
+        self.load_model(output_filename=self.output_filename+"-收入")
+
+        return
+
+    def outcome(self):
+        self.load_model(output_filename=self.output_filename+"-支出")
+
+        return
 
     def sum_price(self):
         """填写总收入"""
@@ -62,10 +96,7 @@ class VoucherInvoiceBankstatemetn(VoucherBase):
 
     def build_vocher(self):
         """"""
-        self.sum_price()
-        self.tax()
-        self.object_loan()
-        self.output()
+        self.load_by_object_name()
 
 
 

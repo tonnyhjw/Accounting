@@ -41,13 +41,13 @@ class Bank(Document):
 
 class BankStatement(Document):
     company_name = StringField(required=True)       # 所属企业名
-    operation_time = DateTimeField()                # 交易时间
-    object_account = StringField(required=True)     # 对方账号
-    object_name = StringField()                     # 对方户名
+    operation_time = DateTimeField(required=True)   # 交易时间
+    object_account = StringField(default="")        # 对方账号
+    object_name = StringField(default="")           # 对方户名
     outcome = FloatField(default=0)                 # 支出
     income = FloatField(default=0)                  # 存入
     balance = FloatField(required=True)             # 余额
-    abstract = StringField()                        # 摘要
+    abstract = StringField(required=True)           # 摘要
     bank = StringField(required=True)               # 所属银行
     insert_time = DateTimeField(required=True)      # 写入时间
 
