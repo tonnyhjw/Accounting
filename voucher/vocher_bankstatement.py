@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from pprint import pprint
+from typing import io
 
 from voucher import *
 from utils import get_logger
@@ -34,9 +35,9 @@ class VoucherInvoiceBankstatement(VoucherBase):
             group = {"$group": {"_id": "$object_name",
                                 "object_income": {"$sum": '$income'},
                                 "object_outcome": {"$sum": '$outcome'}}}
-            self.object_io = aggregate_data(BankStatement, [match, group])
+            self.object_io = aggregate_data(BankStatement, [match, group])[0]
             self.output_filename = "银行凭证-" + self.object_name
-            pprint(self.object_io)
+            # pprint(self.object_io)
         else:
             log.debug("loading other expense data")
             group = {"$group": {"_id": "$abstract",
@@ -44,59 +45,87 @@ class VoucherInvoiceBankstatement(VoucherBase):
                                 "object_outcome": {"$sum": '$outcome'}}}
             self.object_io = aggregate_data(BankStatement, [match, group])
             self.output_filename = "银行凭证-其他费用"
-            pprint(self.object_io)
+            # pprint(self.object_io)
         return
 
     def income(self):
-        self.load_model(output_filename=self.output_filename+"-收入")
+        if self.object_name and self.object_io['object_income']:
+            self.load_model(output_filename=self.output_filename+"-收入")
+            self.model.write_cell(6, 4, "银行存款")
+            self.model.write_cell(6, 5, "收入")
+            self.model.write_cell(6, 6, self.object_io['object_income'])
+            self.model.write_cell(7, 4, "应收账款")
+            self.model.write_cell(7, 5, self.object_io['_id'])
+            self.model.write_cell(7, 7, self.object_io['object_income'])
+            self.write_company_name()
+            self.write_end_date()
+            self.output()
+            log.debug("write object_income {} to voucher".format(self.object_io['object_income']))
+        elif isinstance(self.object_io, list):
+            log.debug('this object is other expense')
+        else:
+            log.debug("object_income is {}".format(self.object_io['object_income']))
 
         return
 
     def outcome(self):
-        self.load_model(output_filename=self.output_filename+"-支出")
+        if self.object_name and self.object_io['object_outcome']:
+            self.load_model(output_filename=self.output_filename+"-支出")
+            self.model.write_cell(7, 4, "银行存款")
+            self.model.write_cell(7, 5, "支出")
+            self.model.write_cell(7, 7, self.object_io['object_outcome'])
+            self.model.write_cell(6, 4, "应付账款")
+            self.model.write_cell(6, 5, self.object_io['_id'])
+            self.model.write_cell(6, 6, self.object_io['object_outcome'])
+            self.write_company_name()
+            self.write_end_date()
+            self.output()
+            log.debug("write object_outcome {} to voucher".format(self.object_io['object_outcome']))
+        elif not self.object_name and isinstance(self.object_io, list):
+            log.debug('this object is other expense')
+            self.other_expense()
+        else:
+            log.debug("object_outcome is {}".format(self.object_io['object_outcome']))
 
         return
 
-    def sum_price(self):
-        """填写总收入"""
-        pipeline = []
-        match = {"$match": {"company_name":self.company_name, "object_name":self.object_name, "invoice_type": "buy",
-                            "billing_date": {"$gte": self.begin_date, "$lt": self.end_date}}}
-        group = {"$group": {"_id": "$object_name", "total": {"$sum": '$sum_price'}}}
-        pipeline.append(match)
-        pipeline.append(group)
-        # pprint(pipeline)
-        self.sum_price_of_object = aggregate_data(Invoice, pipeline)[0]['total']
-        log.debug(self.sum_price_of_object)
-        self.model.write_cell(6, 4, "库存商品")
-        self.model.write_cell(6, 6, self.sum_price_of_object)
-        return self.sum_price
+    def other_expense(self):
+        for io in self.object_io:
+            self.load_model(output_filename=self.output_filename + "-" + io['_id'])
+            if io['_id'] == '手续费':
+                self.model.write_cell(6, 4, "财务费用")
+                self.model.write_cell(6, 5, "手续费")
+            elif io['_id'] == '电话费':
+                self.model.write_cell(6, 4, "管理费用")
+                self.model.write_cell(6, 5, "办公费")
+            elif io['_id'] == '社保费':
+                self.model.write_cell(6, 4, "管理费用")
+                self.model.write_cell(6, 5, "社保费")
+            elif io['_id'] == 'TG':
+                self.model.write_cell(6, 4, "应交税费")
+            elif io['_id'] == '现金':
+                self.model.write_cell(6, 4, "现金")
+            else:
+                log.debug("not defined other expense")
 
-    def tax(self):
-        """填写应交税费"""
-        pipeline = []
-        match = {"$match": {"company_name":self.company_name, "object_name":self.object_name, "invoice_type": "buy",
-                            "billing_date": {"$gte": self.begin_date, "$lt": self.end_date}}}
-        group = {"$group": {"_id": "$object_name", "total": {"$sum": '$tax'}}}
-        pipeline.append(match)
-        pipeline.append(group)
-        # pprint(pipeline)
-        self.tax_of_object = aggregate_data(Invoice, pipeline)[0]['total']
-        log.debug(self.tax_of_object)
-        self.model.write_cell(7, 4, "应交税费")
-        self.model.write_cell(7, 5, "应交增值税-进项税")
-        self.model.write_cell(7, 6, self.tax_of_object)
-        return self.sum_price
+            self.model.write_cell(6, 6, io['object_outcome'])
 
-    def object_loan(self):
-        """填写应收账款"""
-        self.model.write_cell(8, 4, "应付账款")
-        self.model.write_cell(8, 5, self.object_name)
-        self.model.write_cell(8, 7, self.sum_price_of_object+self.tax_of_object)
+            self.model.write_cell(7, 4, "银行存款")
+            self.model.write_cell(7, 5, "支出")
+            self.model.write_cell(7, 7, io['object_outcome'])
+            self.write_company_name()
+            self.write_end_date()
+            self.output()
+            log.debug("built voucher of {}".format(io['_id']))
+        return
 
     def build_vocher(self):
         """"""
         self.load_by_object_name()
+        self.income()
+        self.outcome()
+
+
 
 
 
