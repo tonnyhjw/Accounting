@@ -27,7 +27,7 @@ class BankStatementApi():
             for filename in os.listdir(bank_xlsx_dir):
                 filepath = os.path.join(bank_xlsx_dir, filename)
                 log.debug(filepath)
-                xl = Xlsx(filepath)
+                xl = Xls(filepath)
                 xl_content = xl.contents(row_start=bank_info.starting_row, end_before_last_row=bank_info.ending_row)
                 # self.insert_one_xlsx(xl_content, bank_info)
                 try:
@@ -190,9 +190,9 @@ def aggregate_data(table, pipeline):
 
 
 if __name__ == '__main__':
-    # bsa = BankStatementApi(company="广州南方化玻医疗器械有限公司")
-    # bsa.insert_all()
-    # isa = InvoiceSaleApi("广州南方化玻医疗器械有限公司")
-    # isa.insert_all()
+    bsa = BankStatementApi(company="广州南方化玻医疗器械有限公司")
+    bsa.insert_all()
+    isa = InvoiceSaleApi("广州南方化玻医疗器械有限公司")
+    isa.insert_all()
     iba = InvoiceBuyApi("广州南方化玻医疗器械有限公司")
     iba.insert_all()

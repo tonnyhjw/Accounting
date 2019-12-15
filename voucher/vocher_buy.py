@@ -32,8 +32,9 @@ class VoucherInvoiceBuy(VoucherBase):
         pipeline.append(match)
         pipeline.append(group)
         # pprint(pipeline)
-        self.sum_price_of_object = aggregate_data(Invoice, pipeline)[0]['total']
-        log.debug(self.sum_price_of_object)
+        sum_price_data = aggregate_data(Invoice, pipeline)
+        log.critical("sum_price_data is : {}".format(sum_price_data))
+        self.sum_price_of_object = sum_price_data[0]['total']
         self.model.write_cell(6, 2, "购入")
         self.model.write_cell(6, 4, "库存商品")
         self.model.write_cell(6, 6, self.sum_price_of_object)

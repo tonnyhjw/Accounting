@@ -32,7 +32,7 @@ def vocher_scrip_buy(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_
     begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
     pipeline = []
     match = {"$match": {"company_name": company_name, "invoice_type": "buy",
-                        "billing_date": {"$gte": begin_date, "$lt": end_date}}}
+                        "belong_date": {"$gte": begin_date, "$lt": end_date}}}
     group = {"$group": {"_id": "$object_name"}}
     pipeline.append(match)
     pipeline.append(group)
@@ -67,6 +67,6 @@ def vocher_scrip_bankstatement(company_name, begin_y, begin_m, begin_d, end_y, e
 
 
 if __name__ == '__main__':
-    # vocher_scrip_sale('广州南方化玻医疗器械有限公司', 2019, 10, 1, 2019, 10, 31)
-    # vocher_scrip_buy('广州南方化玻医疗器械有限公司', 2019, 10, 1, 2019, 10, 31)
-    vocher_scrip_bankstatement('广州南方化玻医疗器械有限公司', 2019, 10, 1, 2019, 10, 31)
+    vocher_scrip_sale('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
+    vocher_scrip_buy('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
+    vocher_scrip_bankstatement('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)

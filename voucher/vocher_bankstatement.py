@@ -51,9 +51,11 @@ class VoucherInvoiceBankstatement(VoucherBase):
     def income(self):
         if self.object_name and self.object_io['object_income']:
             self.load_model(output_filename=self.output_filename+"-收入")
+            self.model.write_cell(6, 2, "收款")
             self.model.write_cell(6, 4, "银行存款")
-            self.model.write_cell(6, 5, "收入")
+            # self.model.write_cell(6, 5, "收入")
             self.model.write_cell(6, 6, self.object_io['object_income'])
+            self.model.write_cell(7, 2, "收款")
             self.model.write_cell(7, 4, "应收账款")
             self.model.write_cell(7, 5, self.object_io['_id'])
             self.model.write_cell(7, 7, self.object_io['object_income'])
@@ -71,9 +73,11 @@ class VoucherInvoiceBankstatement(VoucherBase):
     def outcome(self):
         if self.object_name and self.object_io['object_outcome']:
             self.load_model(output_filename=self.output_filename+"-支出")
+            self.model.write_cell(7, 2, "付款")
             self.model.write_cell(7, 4, "银行存款")
-            self.model.write_cell(7, 5, "支出")
+            # self.model.write_cell(7, 5, "支出")
             self.model.write_cell(7, 7, self.object_io['object_outcome'])
+            self.model.write_cell(6, 2, "付款")
             self.model.write_cell(6, 4, "应付账款")
             self.model.write_cell(6, 5, self.object_io['_id'])
             self.model.write_cell(6, 6, self.object_io['object_outcome'])
@@ -93,17 +97,27 @@ class VoucherInvoiceBankstatement(VoucherBase):
         for io in self.object_io:
             self.load_model(output_filename=self.output_filename + "-" + io['_id'])
             if io['_id'] == '手续费':
+                self.model.write_cell(6, 2, "支付手续费")
+                self.model.write_cell(7, 2, "支付手续费")
                 self.model.write_cell(6, 4, "财务费用")
                 self.model.write_cell(6, 5, "手续费")
             elif io['_id'] == '电话费':
+                self.model.write_cell(6, 2, "付电话费")
+                self.model.write_cell(7, 2, "付电话费")
                 self.model.write_cell(6, 4, "管理费用")
                 self.model.write_cell(6, 5, "办公费")
             elif io['_id'] == '社保费':
+                self.model.write_cell(6, 2, "交社保费")
+                self.model.write_cell(7, 2, "交社保费")
                 self.model.write_cell(6, 4, "管理费用")
                 self.model.write_cell(6, 5, "社保费")
             elif io['_id'] == 'TG':
+                self.model.write_cell(6, 2, "交税")
+                self.model.write_cell(7, 2, "交税")
                 self.model.write_cell(6, 4, "应交税费")
             elif io['_id'] == '现金':
+                self.model.write_cell(6, 2, "提现")
+                self.model.write_cell(7, 2, "提现")
                 self.model.write_cell(6, 4, "现金")
             else:
                 log.debug("not defined other expense")
@@ -111,7 +125,7 @@ class VoucherInvoiceBankstatement(VoucherBase):
             self.model.write_cell(6, 6, io['object_outcome'])
 
             self.model.write_cell(7, 4, "银行存款")
-            self.model.write_cell(7, 5, "支出")
+            # self.model.write_cell(7, 5, "支出")
             self.model.write_cell(7, 7, io['object_outcome'])
             self.write_company_name()
             self.write_end_date()
