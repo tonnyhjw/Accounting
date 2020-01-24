@@ -68,5 +68,5 @@ def vocher_scrip_bankstatement(company_name, begin_y, begin_m, begin_d, end_y, e
 
 if __name__ == '__main__':
     vocher_scrip_sale('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
-    vocher_scrip_buy('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
+    vocher_scrip_buy('广州南方化玻医疗器械有限公司', 2019, 10, 1, 2019, 12, 30)
     vocher_scrip_bankstatement('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)

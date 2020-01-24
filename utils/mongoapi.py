@@ -185,6 +185,57 @@ class InvoiceBuyApi(InvoiceBaseApi):
         self.xls = Xls(filepath)
         return self.xls
 
+class InitialOpenningBalanceApi():
+    input_dir = "input/initial_openning_balance"
+    object_name = 2
+    debita_init_openning_balance = 10
+    fidem_init_openning_balance = 11
+
+    def __init__(self, company_name):
+        self.company_name = company_name
+
+    def insert_all(self):
+        if not self.input_dir:
+            log.critical("please define input_dir")
+            return
+
+        xlsx_dir = os.path.join(PROJECT_ROOT, self.input_dir)
+        for filename in os.listdir(xlsx_dir):
+            filepath = os.path.join(xlsx_dir, filename)
+            log.debug(filepath)
+            xl = self.read_excel(filepath)
+            xl_content = xl.contents(row_start=2, end_before_last_row=1)
+
+            try:
+                self.insert_one_xlsx(xl_content)
+            except Exception as e:
+                log.critical("error occur: {}".format(e))
+                continue
+
+    def insert_one_xlsx(self, xl_contents):
+        log.info("Not defined")
+        for row in xl_contents:
+            object_name = row[self.object_name].strip()
+            if object_name in SINGLE_GRADE:
+                first_grade = object_name
+            elif object_name in DOUBLE_GRADE:
+                first_grade = object_name
+                continue
+            else:
+                pass
+
+            log.debug(row)
+            InitialOpenningBalance(company_name=self.company_name, object_name=row[self.object_name].strip(),
+                                   debita_init_openning_balance=row[self.debita_init_openning_balance],
+                                   fidem_init_openning_balance=row[self.fidem_init_openning_balance],
+                                   first_grade=first_grade).save()
+        return
+
+
+    def read_excel(self, filepath):
+        return Xlsx(filepath)
+
+
 def aggregate_data(table, pipeline):
     return list(table.objects.aggregate(*pipeline))
 

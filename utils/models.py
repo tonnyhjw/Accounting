@@ -113,6 +113,73 @@ class Invoice(Document):
         "indexes": ["invoice_code"]
     }
 
+class InitialOpenningBalance(Document):
+    """开账期初数"""
+    company_name = StringField(required=True)                       # 公司名称
+    object_name = StringField(required=True)                        # 科目名称
+    debita_init_openning_balance = FloatField(required=True)        # 借方开账期初数
+    fidem_init_openning_balance = FloatField(required=True)         # 贷方开账期初数
+    first_grade = StringField(required=True)                        # 期初数一级科目 （应付账款、预付账款、等等）
+    open_date = DateTimeField()                                     # 开账日期 （年月）
+
+    def json(self):
+        initial_openning_balance_dict = {
+            "company_name": self.company_name,
+            "object_name": self.object_name,
+            "debita_init_openning_balance": self.debita_init_openning_balance,
+            "fidem_init_openning_balance": self.fidem_init_openning_balance,
+            "first_grade": self.first_grade
+        }
+        return initial_openning_balance_dict
+
+    meta = {
+        "indexes": ["company_name", "object_name",
+                    "debita_init_openning_balance", "fidem_init_openning_balance"]
+    }
+
+class Voucher(Document):
+    """凭证"""
+    company_name = StringField(required=True)   # 公司名称
+    date = DateTimeField(required=True)         # 凭证所属日期
+    category = StringField(required=True)       # 凭证类型
+    number = IntField()                         # 凭证号
+    method = IntField()                         # 收、付、转
+    supervisor = StringField()                  # 主管
+    reviewer = StringField()                    # 审核
+    cashier = StringField()                     # 出纳
+    producer = StringField()                    # 制单
+    row_1 = ListField()                         # 第一行
+    row_2 = ListField()                         # 第二行
+    row_3 = ListField()                         # 第三行
+    row_4 = ListField()                         # 第四行
+    row_5 = ListField()                         # 第五行
+    row_6 = ListField()                         # 第六行
+
+
+    def json(self):
+        voucher_dict = {
+            "company_name": self.company_name,
+            "date": self.date.strftime("%Y-%m-%d"),
+            "row_1": self.row_1,
+            "row_2": self.row_2,
+            "row_3": self.row_3,
+            "row_4": self.row_4,
+            "row_5": self.row_5,
+            "row_6": self.row_6
+        }
+        return voucher_dict
+
+    meta = {
+        "indexes": ["company_name"],
+        "ordering": ["-year"]
+    }
+
+
+
+
+
+
+
 # 保存
 # BankStatement(
 #     object_account="32001766436059555777",

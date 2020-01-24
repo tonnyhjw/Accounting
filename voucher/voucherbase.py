@@ -9,8 +9,17 @@ class VoucherBase():
     project_root = PROJECT_ROOT
     model_sub_dir = None
     output_dir = os.path.join(PROJECT_ROOT, "output")
-    company_name = "未设定企业名"
-
+    company_name = "未定义企业名"
+    category = "未定义凭证"
+    row_len = 1+7       # list 类型一行由0开始算，但是excel类型一行由1开始算，因此在list类型前加一行，写入excel时调用enumerate即可
+    db_object = {
+        "row_1": [""] * row_len,
+        "row_2": [""] * row_len,
+        "row_3": [""] * row_len,
+        "row_4": [""] * row_len,
+        "row_5": [""] * row_len,
+        "row_6": [""] * row_len,
+    }
 
     def load_model(self, output_filename="测试"):
         if not self.model_sub_dir:
@@ -20,9 +29,10 @@ class VoucherBase():
         self.model = Xlsx(self.model_dir, output_path="{}/{}.xlsx".format(self.output_dir, output_filename))
         return
 
-    def iter_mdoel(self):
+    def iter_model(self):
+        """逐行打印当前载入凭证模板"""
         for row in self.model.contents():
-            print(row)
+            log.debug(row)
 
     def output(self):
         try:
@@ -42,15 +52,54 @@ class VoucherBase():
         v_num = ["收", "付", "转"]
         self.model.write_cell(3, 7, v_num[method])
         self.model.write_cell(3, 8, str(number))
+
+        self.db_object["number"] = number
+        self.db_object["method"] = method
         return
 
     def write_company_name(self):
+        self.db_object["company_name"] = self.company_name
         self.model.write_cell(1, 5, self.company_name)
         return
 
     def write_end_date(self):
         try:
+            self.db_object["date"] = self.end_date
             self.model.write_cell(3, 4, "{} 年 {} 月 {} 日".format(self.end_date.year, self.end_date.month, self.end_date.day))
         except Exception as e:
             log.critical(e)
+        return
+
+    def insesr_db(self):
+        yes = {'yes', 'y', 'ye', ''}
+        no = {'no', 'n'}
+
+        self.write_category()
+        log.debug("try insert voucher : {}".format(self.db_object))
+        if not Voucher.objects(**self.db_object):
+            log.debug("Start insert, voucher dose not exist")
+            Voucher(**self.db_object).save()
+        else:
+            log.info("凭证已存在! 请问是否继续？ 输入y/n")
+            choice = input().lower()
+            assert choice not in no, "停止运行"
+            if choice in yes:
+                log.info("跳过该凭证")
+            else:
+                self.insesr_db()
+        return
+
+    def reset_db_object(self):
+        """用于复位"""
+        self.db_object = {
+            "row_1": [""] * self.row_len,
+            "row_2": [""] * self.row_len,
+            "row_3": [""] * self.row_len,
+            "row_4": [""] * self.row_len,
+            "row_5": [""] * self.row_len,
+            "row_6": [""] * self.row_len,
+        }
+
+    def write_category(self):
+        self.db_object["category"] = self.category
         return

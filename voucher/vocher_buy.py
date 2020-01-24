@@ -15,6 +15,7 @@ log = get_logger(__name__, level=10)
 
 class VoucherInvoiceBuy(VoucherBase):
     model_sub_dir = "xlsx_model/记账凭证模板.xlsx"
+    category = "进项发票凭证"
 
     def __init__(self, company_name, object_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
         self.company_name = company_name
@@ -38,6 +39,10 @@ class VoucherInvoiceBuy(VoucherBase):
         self.model.write_cell(6, 2, "购入")
         self.model.write_cell(6, 4, "库存商品")
         self.model.write_cell(6, 6, self.sum_price_of_object)
+
+        self.db_object["row_1"][2] = "购入"
+        self.db_object["row_1"][4] = "库存商品"
+        self.db_object["row_1"][6] = self.sum_price_of_object
         return self.sum_price
 
     def tax(self):
@@ -55,6 +60,11 @@ class VoucherInvoiceBuy(VoucherBase):
         self.model.write_cell(7, 4, "应交税费")
         self.model.write_cell(7, 5, "应交增值税-进项税")
         self.model.write_cell(7, 6, self.tax_of_object)
+
+        self.db_object["row_2"][2] = "进项税"
+        self.db_object["row_2"][4] = "应交税费"
+        self.db_object["row_2"][5] = "应交增值税-进项税"
+        self.db_object["row_2"][6] = self.tax_of_object
         return self.sum_price
 
     def object_loan(self):
@@ -64,6 +74,11 @@ class VoucherInvoiceBuy(VoucherBase):
         self.model.write_cell(8, 5, self.object_name)
         self.model.write_cell(8, 7, self.sum_price_of_object+self.tax_of_object)
 
+        self.db_object["row_3"][2] = "应付"
+        self.db_object["row_3"][4] = "应付账款"
+        self.db_object["row_3"][5] = "应交增值税-进项税"
+        self.db_object["row_3"][6] = self.sum_price_of_object+self.tax_of_object
+
     def build_vocher(self):
         """"""
         self.write_company_name()
@@ -71,6 +86,7 @@ class VoucherInvoiceBuy(VoucherBase):
         self.sum_price()
         self.tax()
         self.object_loan()
+        self.insesr_db()
         self.output()
 
 
