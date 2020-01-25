@@ -46,6 +46,16 @@ class Xlsx(ExcelBase):
         log.debug("write [{}] to row:{}, col:{}".format(content, row, col))
         return
 
+    def write_row(self, row_index, row_contents=[]):
+        if not row_contents:
+            log.critical("tried to write empty row!!")
+            return
+        for col, content in enumerate(row_contents):
+            if col == 0:
+                continue
+            self.write_cell(row_index, col, content)
+        return
+
 class Xls(ExcelBase):
 
     def read_xlsx(self, filepath, sheet_index=0):

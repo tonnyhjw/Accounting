@@ -83,11 +83,12 @@ class VoucherInvoiceBuy(VoucherBase):
         """"""
         self.write_company_name()
         self.write_end_date()
+        self.wirte_specific(self.object_name)
         self.sum_price()
         self.tax()
         self.object_loan()
         self.insesr_db()
-        self.output()
+        # self.output()
 
 
 

@@ -7,7 +7,7 @@ log = get_logger(__name__, level=10)
 
 class VoucherBase():
     project_root = PROJECT_ROOT
-    model_sub_dir = None
+    model_sub_dir, object_name = None, None
     output_dir = os.path.join(PROJECT_ROOT, "output")
     company_name = "未定义企业名"
     category = "未定义凭证"
@@ -102,4 +102,10 @@ class VoucherBase():
 
     def write_category(self):
         self.db_object["category"] = self.category
+        return
+
+    def wirte_specific(self, specific=None):
+        """数据库信息增加object_name"""
+        assert specific, "specific is not defined"
+        self.db_object["specific"] = specific
         return

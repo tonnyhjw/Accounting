@@ -1,14 +1,14 @@
 from pprint import pprint
+import os
 from datetime import datetime
 
 from voucher import *
-from utils.helpers import get_logger
-from utils.models import Invoice, BankStatement
+from utils import *
 from utils.mongoapi import aggregate_data
 
 log = get_logger(__name__, level=10)
 
-def vocher_scrip_sale(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
+def vocher_sale_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
     begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
     pipeline = []
     match = {"$match": {"company_name": company_name, "invoice_type": "sale",
@@ -28,7 +28,7 @@ def vocher_scrip_sale(company_name, begin_y, begin_m, begin_d, end_y, end_m, end
 
     return
 
-def vocher_scrip_buy(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
+def vocher_buy_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
     begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
     pipeline = []
     match = {"$match": {"company_name": company_name, "invoice_type": "buy",
@@ -48,25 +48,68 @@ def vocher_scrip_buy(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_
 
     return
 
-def vocher_scrip_bankstatement(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
+def vocher_bankstatement_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
     begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
     match = {"$match": {"company_name": company_name,
                         "operation_time": {"$gte": begin_date, "$lt": end_date}}}
-    pipeline_abstract = [match, {"$group": {"_id": "$abstract"}}]
-    pipeline_object_name = [match, {"$group": {"_id": "$object_name"}}]
 
-    abstracts = aggregate_data(BankStatement, pipeline_abstract)
-    object_names = aggregate_data(BankStatement, pipeline_object_name)
+    # pipeline_abstract = [match, {"$group": {"_id": "$abstract"}}]
+    # abstracts = aggregate_data(BankStatement, pipeline_abstract)
     # for abstract in abstracts:
     #     log.debug("abstract:{}".format(abstract))
+
+    pipeline_object_name = [match, {"$group": {"_id": "$object_name"}}]
+    object_names = aggregate_data(BankStatement, pipeline_object_name)
     for object_name in object_names:
         vbs = VoucherInvoiceBankstatement(company_name, object_name["_id"], begin_y, begin_m, begin_d, end_y, end_m, end_d)
         vbs.build_vocher()
     return
 
+def build_voucher_excel(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d,
+                        model_sub_dir="xlsx_model/记账凭证模板.xlsx"):
+    """从数据库导出所有目标公司的凭证excel"""
+    begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
+    match = {"$match": {"company_name": company_name,
+                        "date": {"$gte": begin_date, "$lte": end_date}}}
+    pipeline_object_name = [match]
+    vouchers_matched = aggregate_data(Voucher, pipeline_object_name)
 
+    model_dir = os.path.join(PROJECT_ROOT, model_sub_dir)
+    output_dir = os.path.join(PROJECT_ROOT, "output", company_name)
+    log.debug(model_dir)
+
+    for voucher in vouchers_matched:
+        output_filename = "{}-{}".format(voucher.get('category', '未定义凭证类型'), voucher.get('specific', '未定义公司名'))
+        log.debug("start writing voucher excel <{}>".format(output_filename))
+        # 建立excel
+        model = Xlsx(model_dir, output_path="{}/{}.xlsx".format(output_dir, output_filename))
+
+        # 写入公司名
+        model.write_cell(1, 5, voucher.get("company_name"))
+        # 写入凭证日期
+        model.write_cell(3, 4,  "{} 年 {} 月 {} 日".format(voucher.get("date").year, voucher.get("date").month, voucher.get("date").day))
+        # 写入凭证编号
+
+        # 写入具体表格内容
+        model.write_row(row_index=6, row_contents=voucher.get("row_1"))
+        model.write_row(row_index=7, row_contents=voucher.get("row_2"))
+        model.write_row(row_index=8, row_contents=voucher.get("row_3"))
+        model.write_row(row_index=9, row_contents=voucher.get("row_4"))
+        model.write_row(row_index=10, row_contents=voucher.get("row_5"))
+        model.write_row(row_index=11, row_contents=voucher.get("row_6"))
+
+        try:
+            model.output()
+        except FileNotFoundError:
+            os.mkdir(output_dir)
+            model.output()
+
+        log.debug("finished writing excel.")
+
+    return
 
 if __name__ == '__main__':
-    vocher_scrip_sale('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
-    vocher_scrip_buy('广州南方化玻医疗器械有限公司', 2019, 10, 1, 2019, 12, 30)
-    vocher_scrip_bankstatement('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
+    # vocher_sale_insert('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
+    # vocher_buy_insert('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
+    # vocher_bankstatement_insert('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
+    build_voucher_excel('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)

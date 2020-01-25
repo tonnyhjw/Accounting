@@ -139,7 +139,8 @@ class InitialOpenningBalance(Document):
 
 class Voucher(Document):
     """凭证"""
-    company_name = StringField(required=True)   # 公司名称
+    company_name = StringField(required=True)   # 本公司名称
+    specific = StringField(required=True)       # 凭证具体所属事项（进/销目标、其他费用、现金等）
     date = DateTimeField(required=True)         # 凭证所属日期
     category = StringField(required=True)       # 凭证类型
     number = IntField()                         # 凭证号

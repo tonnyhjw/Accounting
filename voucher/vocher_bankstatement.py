@@ -39,7 +39,7 @@ class VoucherInvoiceBankstatement(VoucherBase):
                                 "object_outcome": {"$sum": '$outcome'}}}
             self.object_io = aggregate_data(BankStatement, [match, group])[0]
             self.output_filename = "银行凭证-" + self.object_name
-            # pprint(self.object_io)
+            self.wirte_specific(specific=self.object_name)
         else:
             log.debug("loading other expense data")
             group = {"$group": {"_id": "$abstract",
@@ -47,27 +47,18 @@ class VoucherInvoiceBankstatement(VoucherBase):
                                 "object_outcome": {"$sum": '$outcome'}}}
             self.object_io = aggregate_data(BankStatement, [match, group])
             self.output_filename = "银行凭证-其他费用"
-            # pprint(self.object_io)
+            self.wirte_specific(specific="其他费用")
         return
 
     def income(self):
-
+        self.reset_db_object()
         if self.object_name and self.object_io['object_income']:
             self.category += "-收入"
             self.load_model(output_filename=self.output_filename+"-收入")
-            self.model.write_cell(6, 2, "收款")
-            self.model.write_cell(6, 4, "银行存款")
-            # self.model.write_cell(6, 5, "收入")
-            self.model.write_cell(6, 6, self.object_io['object_income'])
 
             self.db_object["row_1"][2] = "收款"
             self.db_object["row_1"][4] = "银行存款"
             self.db_object["row_1"][6] = self.object_io['object_income']
-
-            self.model.write_cell(7, 2, "收款")
-            self.model.write_cell(7, 4, "应收账款")
-            self.model.write_cell(7, 5, self.object_io['_id'])
-            self.model.write_cell(7, 7, self.object_io['object_income'])
 
             self.db_object["row_2"][2] = "收款"
             self.db_object["row_2"][4] = "应收账款"
@@ -76,8 +67,10 @@ class VoucherInvoiceBankstatement(VoucherBase):
 
             self.write_company_name()
             self.write_end_date()
-            self.output()
+            self.wirte_specific(self.object_name)
+            # self.output()
             self.insesr_db()
+
             log.debug("write object_income {} to voucher".format(self.object_io['object_income']))
         elif isinstance(self.object_io, list):
             log.debug('this object is other expense')
@@ -88,23 +81,14 @@ class VoucherInvoiceBankstatement(VoucherBase):
         return
 
     def outcome(self):
-
+        self.reset_db_object()
         if self.object_name and self.object_io['object_outcome']:
             self.category += "-支出"
             self.load_model(output_filename=self.output_filename+"-支出")
-            self.model.write_cell(7, 2, "付款")
-            self.model.write_cell(7, 4, "银行存款")
-            # self.model.write_cell(7, 5, "支出")
-            self.model.write_cell(7, 7, self.object_io['object_outcome'])
 
             self.db_object["row_2"][2] = "付款"
             self.db_object["row_2"][4] = "银行存款"
             self.db_object["row_2"][7] = self.object_io['object_outcome']
-
-            self.model.write_cell(6, 2, "付款")
-            self.model.write_cell(6, 4, "应付账款")
-            self.model.write_cell(6, 5, self.object_io['_id'])
-            self.model.write_cell(6, 6, self.object_io['object_outcome'])
 
             self.db_object["row_1"][2] = "收款"
             self.db_object["row_1"][4] = "应付账款"
@@ -113,8 +97,10 @@ class VoucherInvoiceBankstatement(VoucherBase):
 
             self.write_company_name()
             self.write_end_date()
-            self.output()
+            self.wirte_specific(self.object_name)
+            # self.output()
             self.insesr_db()
+            self.reset_db_object()
             log.debug("write object_outcome {} to voucher".format(self.object_io['object_outcome']))
         elif not self.object_name and isinstance(self.object_io, list):
             log.debug('this object is other expense')
@@ -126,14 +112,12 @@ class VoucherInvoiceBankstatement(VoucherBase):
         return
 
     def other_expense(self):
+        self.reset_db_object()
+
         for io in self.object_io:
             self.load_model(output_filename=self.output_filename + "-" + io['_id'])
             if io['_id'] == '手续费':
                 self.category += "-手续费"
-                self.model.write_cell(6, 2, "支付手续费")
-                self.model.write_cell(7, 2, "支付手续费")
-                self.model.write_cell(6, 4, "财务费用")
-                self.model.write_cell(6, 5, "手续费")
 
                 self.db_object["row_1"][2] = "支付手续费"
                 self.db_object["row_2"][2] = "支付手续费"
@@ -141,10 +125,6 @@ class VoucherInvoiceBankstatement(VoucherBase):
                 self.db_object["row_1"][5] = "手续费"
             elif io['_id'] == '电话费':
                 self.category += "-电话费"
-                self.model.write_cell(6, 2, "付电话费")
-                self.model.write_cell(7, 2, "付电话费")
-                self.model.write_cell(6, 4, "管理费用")
-                self.model.write_cell(6, 5, "办公费")
 
                 self.db_object["row_1"][2] = "付电话费"
                 self.db_object["row_2"][2] = "付电话费"
@@ -152,10 +132,6 @@ class VoucherInvoiceBankstatement(VoucherBase):
                 self.db_object["row_1"][5] = "办公费"
             elif io['_id'] == '社保费':
                 self.category += "-社保费"
-                self.model.write_cell(6, 2, "交社保费")
-                self.model.write_cell(7, 2, "交社保费")
-                self.model.write_cell(6, 4, "管理费用")
-                self.model.write_cell(6, 5, "社保费")
 
                 self.db_object["row_1"][2] = "交社保费"
                 self.db_object["row_2"][2] = "交社保费"
@@ -163,18 +139,14 @@ class VoucherInvoiceBankstatement(VoucherBase):
                 self.db_object["row_1"][5] = "社保费"
             elif io['_id'] == 'TG':
                 self.category += "-TG"
-                self.model.write_cell(6, 2, "交税")
-                self.model.write_cell(7, 2, "交税")
-                self.model.write_cell(6, 4, "应交税费")
+
 
                 self.db_object["row_1"][2] = "交税"
                 self.db_object["row_2"][2] = "交税"
                 self.db_object["row_1"][4] = "应交税费"
             elif io['_id'] == '现金':
                 self.category += "-现金"
-                self.model.write_cell(6, 2, "提现")
-                self.model.write_cell(7, 2, "提现")
-                self.model.write_cell(6, 4, "现金")
+
 
                 self.db_object["row_1"][2] = "提现"
                 self.db_object["row_2"][2] = "提现"
@@ -192,8 +164,11 @@ class VoucherInvoiceBankstatement(VoucherBase):
 
             self.write_company_name()
             self.write_end_date()
-            self.output()
+            self.wirte_specific("其他费用")
+            # self.output()
             self.insesr_db()
+            self.category = "银行凭证"
+
             log.debug("built voucher of {}".format(io['_id']))
 
         # self.category = "银行凭证"
