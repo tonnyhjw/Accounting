@@ -100,7 +100,7 @@ class VoucherInvoiceBankstatement(VoucherBase):
             self.wirte_specific(self.object_name)
             # self.output()
             self.insesr_db()
-            self.reset_db_object()
+
             log.debug("write object_outcome {} to voucher".format(self.object_io['object_outcome']))
         elif not self.object_name and isinstance(self.object_io, list):
             log.debug('this object is other expense')

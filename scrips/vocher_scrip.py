@@ -12,7 +12,7 @@ def vocher_sale_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, en
     begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
     pipeline = []
     match = {"$match": {"company_name": company_name, "invoice_type": "sale",
-                        "billing_date": {"$gte": begin_date, "$lt": end_date}}}
+                        "billing_date": {"$gte": begin_date, "$lte": end_date}}}
     group = {"$group": {"_id": "$object_name"}}
     pipeline.append(match)
     pipeline.append(group)
@@ -32,7 +32,7 @@ def vocher_buy_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end
     begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
     pipeline = []
     match = {"$match": {"company_name": company_name, "invoice_type": "buy",
-                        "belong_date": {"$gte": begin_date, "$lt": end_date}}}
+                        "belong_date": {"$gte": begin_date, "$lte": end_date}}}
     group = {"$group": {"_id": "$object_name"}}
     pipeline.append(match)
     pipeline.append(group)
@@ -60,8 +60,9 @@ def vocher_bankstatement_insert(company_name, begin_y, begin_m, begin_d, end_y, 
 
     pipeline_object_name = [match, {"$group": {"_id": "$object_name"}}]
     object_names = aggregate_data(BankStatement, pipeline_object_name)
-    for object_name in object_names:
+    for v_num, object_name in enumerate(object_names):
         vbs = VoucherInvoiceBankstatement(company_name, object_name["_id"], begin_y, begin_m, begin_d, end_y, end_m, end_d)
+        vbs.vocher_num(number=v_num + 1)
         vbs.build_vocher()
     return
 
@@ -88,8 +89,6 @@ def build_voucher_excel(company_name, begin_y, begin_m, begin_d, end_y, end_m, e
         model.write_cell(1, 5, voucher.get("company_name"))
         # 写入凭证日期
         model.write_cell(3, 4,  "{} 年 {} 月 {} 日".format(voucher.get("date").year, voucher.get("date").month, voucher.get("date").day))
-        # 写入凭证编号
-
         # 写入具体表格内容
         model.write_row(row_index=6, row_contents=voucher.get("row_1"))
         model.write_row(row_index=7, row_contents=voucher.get("row_2"))
@@ -97,6 +96,11 @@ def build_voucher_excel(company_name, begin_y, begin_m, begin_d, end_y, end_m, e
         model.write_row(row_index=9, row_contents=voucher.get("row_4"))
         model.write_row(row_index=10, row_contents=voucher.get("row_5"))
         model.write_row(row_index=11, row_contents=voucher.get("row_6"))
+
+        # 写入凭证编号
+        model.write_cell(3, 8, voucher.get("number", ""))
+        # 写入收付转
+        model.write_cell(3, 7, voucher.get("method", ""))
 
         try:
             model.output()
@@ -109,7 +113,7 @@ def build_voucher_excel(company_name, begin_y, begin_m, begin_d, end_y, end_m, e
     return
 
 if __name__ == '__main__':
-    # vocher_sale_insert('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
-    # vocher_buy_insert('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
-    # vocher_bankstatement_insert('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
+    vocher_sale_insert('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
+    vocher_buy_insert('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
+    vocher_bankstatement_insert('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
     build_voucher_excel('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)

@@ -15,11 +15,14 @@ from utils.mongoapi import aggregate_data
 
 log = get_logger(__name__, level=10)
 
-def cost(company_name):
+def cost(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d, range_btn=0.68, range_top=0.7):
 
     match = {"$match": {"company_name": company_name, "invoice_type": "sale",
-                        "billing_date": {"$gte": datetime(2019,11,1), "$lt": datetime(2019,11,30)}}}
-    group = {"$group": {"_id": "$merchandise_name", "sumprice": {"$sum": '$sum_price'}, "amount": {"$sum": '$merchandise_amount'}}}
+                        "billing_date": {"$gte": datetime(begin_y, begin_m, begin_d),
+                                         "$lte": datetime(end_y, end_m, end_d)}}}
+    group = {"$group": {"_id": "$merchandise_name",
+                        "sumprice": {"$sum": '$sum_price'},
+                        "amount": {"$sum": '$merchandise_amount'}}}
     # project = {"$project": {"merchandise_name":1, 'sum_price':1, "merchandise_amount":1}}
     pipeline = [match, group]
 
@@ -33,7 +36,7 @@ def cost(company_name):
 
 
     for i, data in enumerate(datas):
-        param = random.uniform(0.68, 0.7)
+        param = random.uniform(range_btn, range_top)
         # print(param)
         print(data)
         # print("{}: {} * {}".format(i, data.get('sumprice'), param))
@@ -58,4 +61,4 @@ def cost(company_name):
     return
 
 if __name__ == '__main__':
-    cost('广州南方化玻医疗器械有限公司')
+    cost('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31, range_btn=0.7, range_top=0.8)

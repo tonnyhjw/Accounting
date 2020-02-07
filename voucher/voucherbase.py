@@ -50,11 +50,11 @@ class VoucherBase():
         :return:
         """
         v_num = ["收", "付", "转"]
-        self.model.write_cell(3, 7, v_num[method])
-        self.model.write_cell(3, 8, str(number))
+        # self.model.write_cell(3, 7, v_num[method])
+        # self.model.write_cell(3, 8, str(number))
 
-        self.db_object["number"] = number
-        self.db_object["method"] = method
+        self.db_object["number"] = str(number)
+        self.db_object["method"] = v_num[method]
         return
 
     def write_company_name(self):

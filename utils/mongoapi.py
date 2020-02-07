@@ -165,7 +165,7 @@ class InvoiceBuyApi(InvoiceBaseApi):
 
     def insert_one_xlsx(self, xl_contents):
 
-        belong_date = datetime.strptime(self.xls.sheet_r.row_values(self.belong_date[0])[self.belong_date[1]]+"30", "%Y%m%d")
+        belong_date = datetime.strptime(self.xls.sheet_r.row_values(self.belong_date[0])[self.belong_date[1]]+"28", "%Y%m%d")
         log.debug("belong date: {}".format(belong_date))
         for row in xl_contents:
             log.debug("row :{}".format(row))
@@ -187,12 +187,14 @@ class InvoiceBuyApi(InvoiceBaseApi):
 
 class InitialOpenningBalanceApi():
     input_dir = "input/initial_openning_balance"
-    object_name = 2
-    debita_init_openning_balance = 10
-    fidem_init_openning_balance = 11
+    subject_col = 2                             # 科目所在列
+    code_col = 1                                # 科目代码所在列
+    cur_balance_debit = 10
+    cur_balance_credit = 11
 
-    def __init__(self, company_name):
+    def __init__(self, company_name, year, month):
         self.company_name = company_name
+        self.year, self.month = year, month
 
     def insert_all(self):
         if not self.input_dir:
@@ -213,22 +215,45 @@ class InitialOpenningBalanceApi():
                 continue
 
     def insert_one_xlsx(self, xl_contents):
-        log.info("Not defined")
+        subject_lv1 = "未定义科目"
         for row in xl_contents:
-            object_name = row[self.object_name].strip()
-            if object_name in SINGLE_GRADE:
-                first_grade = object_name
-            elif object_name in DOUBLE_GRADE:
-                first_grade = object_name
-                continue
-            else:
-                pass
-
             log.debug(row)
-            InitialOpenningBalance(company_name=self.company_name, object_name=row[self.object_name].strip(),
-                                   debita_init_openning_balance=row[self.debita_init_openning_balance],
-                                   fidem_init_openning_balance=row[self.fidem_init_openning_balance],
-                                   first_grade=first_grade).save()
+            code = row[self.code_col].strip()
+            subject = row[self.subject_col].strip()
+            if len(code) == 4:
+                log.debug("{} is subject_lv1".format(subject))
+                subject_lv1 = subject
+                subject_lv2 = None
+                subject_lv3 = None
+            elif len(code) == 7:
+                log.debug("{} is subject_lv2".format(subject))
+                subject_lv2 = subject
+            elif len(code) == 10:
+                log.debug("{} is subject_lv3".format(subject))
+                subject_lv3 = subject
+            else:
+                raise ValueError
+
+            AccountBalance(company_name=self.company_name, is_openning_balance=True, date=datetime(year=self.year, month=self.month, day=25),
+                           subject_lv1=subject_lv1, subject_lv2=subject_lv2, subject_lv3=subject_lv3,
+                           cur_balance_debit=row[self.cur_balance_debit], cur_balance_credit=row[self.cur_balance_credit]).save()
+            # if object_name in SINGLE_GRADE:
+            #     first_grade = object_name
+            # elif object_name in DOUBLE_GRADE:
+            #     first_grade = object_name
+            #     continue
+            # elif object_name in TRIPLE_GRADE:
+            #     first_grade = object_name
+            # else:
+            #     pass
+            #
+            # log.debug(row)
+            # InitialOpenningBalance(company_name=self.company_name, object_name=row[self.object_name].strip(),
+            #                        debita_init_openning_balance=row[self.debita_init_openning_balance],
+            #                        fidem_init_openning_balance=row[self.fidem_init_openning_balance],
+            #                        first_grade=first_grade).save()
+
+
         return
 
 
@@ -241,9 +266,9 @@ def aggregate_data(table, pipeline):
 
 
 if __name__ == '__main__':
-    bsa = BankStatementApi(company="广州南方化玻医疗器械有限公司")
-    bsa.insert_all()
+    # bsa = BankStatementApi(company="广州南方化玻医疗器械有限公司")
+    # bsa.insert_all()
     isa = InvoiceSaleApi("广州南方化玻医疗器械有限公司")
     isa.insert_all()
-    iba = InvoiceBuyApi("广州南方化玻医疗器械有限公司")
-    iba.insert_all()
+    # iba = InvoiceBuyApi("广州南方化玻医疗器械有限公司")
+    # iba.insert_all()

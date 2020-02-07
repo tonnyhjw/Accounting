@@ -143,8 +143,8 @@ class Voucher(Document):
     specific = StringField(required=True)       # 凭证具体所属事项（进/销目标、其他费用、现金等）
     date = DateTimeField(required=True)         # 凭证所属日期
     category = StringField(required=True)       # 凭证类型
-    number = IntField()                         # 凭证号
-    method = IntField()                         # 收、付、转
+    number = StringField()                      # 凭证号
+    method = StringField()                      # 收、付、转
     supervisor = StringField()                  # 主管
     reviewer = StringField()                    # 审核
     cashier = StringField()                     # 出纳
@@ -173,6 +173,36 @@ class Voucher(Document):
     meta = {
         "indexes": ["company_name"],
         "ordering": ["-year"]
+    }
+
+class AccountBalance(Document):
+    """科目余额表"""
+    company_name = StringField(required=True)           # 公司名称
+    is_openning_balance = BooleanField(required=True)   # 是否开账余额
+    date = DateTimeField(required=True)                 # 所属日期
+    subject_lv1 = StringField(required=True)            # 一级科目
+    subject_lv2 = StringField(default=None)             # 二级科目
+    subject_lv3 = StringField(default=None)             # 三级科目
+
+    init_balance_debit = FloatField()                   # 期初余额(借方)
+    init_balance_credit = FloatField()                  # 期初余额(贷方)
+    cur_amount_debit = FloatField()                     # 本期发生额(借方)
+    cur_amount_credit = FloatField()                    # 本期发生额(贷方)
+    this_year_amount_debit = FloatField()               # 本年发生额(借方)
+    this_year_amount_credit = FloatField()              # 本年发生额(贷方)
+    cur_balance_debit = FloatField(required=True)       # 期末余额(借方)
+    cur_balance_credit = FloatField(required=True)      # 期末余额(贷方)
+
+    def json(self):
+        account_balance_dict = {
+            "company_name": self.company_name,
+            "date": self.date,
+            "subject": "{}-{}-{}".format(self.subject_lv1, self.subject_lv2, self.subject_lv3)
+        }
+        return account_balance_dict
+
+    meta = {
+        "indexes": ["company_name", "subject_lv1", "subject_lv2", "subject_lv3"]
     }
 
 
