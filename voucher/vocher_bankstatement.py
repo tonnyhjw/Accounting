@@ -14,11 +14,11 @@ from utils.mongoapi import aggregate_data
 
 log = get_logger(__name__, level=10)
 
-class VoucherInvoiceBankstatement(VoucherBase):
-    model_sub_dir = "xlsx_model/记账凭证模板.xlsx"
-    category = "银行凭证"
+class VoucherBankstatement(VoucherBase):
 
     def __init__(self, company_name, object_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
+        super(VoucherBankstatement, self).__init__()
+        self.category = "银行凭证"
         self.company_name = company_name
         self.object_name = object_name
         self.output_dir = os.path.join(self.output_dir, self.company_name)
@@ -30,7 +30,7 @@ class VoucherInvoiceBankstatement(VoucherBase):
     def load_by_object_name(self):
         """按对方户名导入"""
         match = {"$match": {"company_name": self.company_name, "object_name": self.object_name,
-                            "operation_time": {"$gte": self.begin_date, "$lt": self.end_date}}}
+                            "operation_time": {"$gte": self.begin_date, "$lte": self.end_date}}}
 
         if self.object_name:
             log.debug("loading object:{}".format(self.object_name))

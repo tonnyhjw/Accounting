@@ -5,21 +5,23 @@ from utils import *
 
 log = get_logger(__name__, level=10)
 
-class VoucherBase():
-    project_root = PROJECT_ROOT
-    model_sub_dir, object_name = None, None
-    output_dir = os.path.join(PROJECT_ROOT, "output")
-    company_name = "未定义企业名"
-    category = "未定义凭证"
-    row_len = 1+7       # list 类型一行由0开始算，但是excel类型一行由1开始算，因此在list类型前加一行，写入excel时调用enumerate即可
-    db_object = {
-        "row_1": [""] * row_len,
-        "row_2": [""] * row_len,
-        "row_3": [""] * row_len,
-        "row_4": [""] * row_len,
-        "row_5": [""] * row_len,
-        "row_6": [""] * row_len,
-    }
+class VoucherBase(object):
+    def __init__(self):
+        self.project_root = PROJECT_ROOT
+        self.model_sub_dir, object_name = None, None
+        self.output_dir = os.path.join(PROJECT_ROOT, "output")
+        self.company_name = "未定义企业名"
+        self.category = "未定义凭证"
+        self.model_sub_dir = "xlsx_model/记账凭证模板.xlsx"
+        self.row_len = 1+7       # list 类型一行由0开始算，但是excel类型一行由1开始算，因此在list类型前加一行，写入excel时调用enumerate即可
+        self.db_object = {
+            "row_1": [""] * self.row_len,
+            "row_2": [""] * self.row_len,
+            "row_3": [""] * self.row_len,
+            "row_4": [""] * self.row_len,
+            "row_5": [""] * self.row_len,
+            "row_6": [""] * self.row_len,
+        }
 
     def load_model(self, output_filename="测试"):
         if not self.model_sub_dir:
@@ -46,7 +48,7 @@ class VoucherBase():
         """
         编辑凭证号
         :param method: 0 = 收；1 = 付，2 = 转
-        :param number:
+        :param number: 凭证编号
         :return:
         """
         v_num = ["收", "付", "转"]

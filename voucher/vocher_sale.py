@@ -14,10 +14,10 @@ from utils.mongoapi import aggregate_data
 log = get_logger(__name__, level=10)
 
 class VoucherInvoiceSale(VoucherBase):
-    model_sub_dir = "xlsx_model/记账凭证模板.xlsx"
-    category = "销项发票凭证"
 
     def __init__(self, company_name, object_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
+        super(VoucherInvoiceSale, self).__init__()
+        self.category = "销项发票凭证"
         self.company_name = company_name
         self.object_name = object_name
         self.output_dir = os.path.join(self.output_dir, self.company_name)
@@ -28,7 +28,7 @@ class VoucherInvoiceSale(VoucherBase):
         """填写总收入"""
         pipeline = []
         match = {"$match": {"company_name":self.company_name, "object_name":self.object_name, "invoice_type": "sale",
-                            "billing_date": {"$gte": self.begin_date, "$lt": self.end_date}}}
+                            "billing_date": {"$gte": self.begin_date, "$lte": self.end_date}}}
         group = {"$group": {"_id": "$object_name", "total": {"$sum": '$sum_price'}}}
         pipeline.append(match)
         pipeline.append(group)
@@ -47,7 +47,7 @@ class VoucherInvoiceSale(VoucherBase):
         """填写应交税费"""
         pipeline = []
         match = {"$match": {"company_name":self.company_name, "object_name":self.object_name, "invoice_type": "sale",
-                            "billing_date": {"$gte": self.begin_date, "$lt": self.end_date}}}
+                            "billing_date": {"$gte": self.begin_date, "$lte": self.end_date}}}
         group = {"$group": {"_id": "$object_name", "total": {"$sum": '$tax'}}}
         pipeline.append(match)
         pipeline.append(group)

@@ -14,10 +14,10 @@ from utils.mongoapi import aggregate_data
 log = get_logger(__name__, level=10)
 
 class VoucherInvoiceBuy(VoucherBase):
-    model_sub_dir = "xlsx_model/记账凭证模板.xlsx"
-    category = "进项发票凭证"
 
     def __init__(self, company_name, object_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
+        super(VoucherInvoiceBuy, self).__init__()
+        self.category = "进项发票凭证"
         self.company_name = company_name
         self.object_name = object_name
         self.output_dir = os.path.join(self.output_dir, self.company_name)
@@ -28,7 +28,7 @@ class VoucherInvoiceBuy(VoucherBase):
         """填写总收入"""
         pipeline = []
         match = {"$match": {"company_name":self.company_name, "object_name":self.object_name, "invoice_type": "buy",
-                            "belong_date": {"$gte": self.begin_date, "$lt": self.end_date}}}
+                            "belong_date": {"$gte": self.begin_date, "$lte": self.end_date}}}
         group = {"$group": {"_id": "$object_name", "total": {"$sum": '$sum_price'}}}
         pipeline.append(match)
         pipeline.append(group)
@@ -49,7 +49,7 @@ class VoucherInvoiceBuy(VoucherBase):
         """填写应交税费"""
         pipeline = []
         match = {"$match": {"company_name":self.company_name, "object_name":self.object_name, "invoice_type": "buy",
-                            "belong_date": {"$gte": self.begin_date, "$lt": self.end_date}}}
+                            "belong_date": {"$gte": self.begin_date, "$lte": self.end_date}}}
         group = {"$group": {"_id": "$object_name", "total": {"$sum": '$tax'}}}
         pipeline.append(match)
         pipeline.append(group)
@@ -76,8 +76,8 @@ class VoucherInvoiceBuy(VoucherBase):
 
         self.db_object["row_3"][2] = "应付"
         self.db_object["row_3"][4] = "应付账款"
-        self.db_object["row_3"][5] = "应交增值税-进项税"
-        self.db_object["row_3"][6] = self.sum_price_of_object+self.tax_of_object
+        self.db_object["row_3"][5] = self.object_name
+        self.db_object["row_3"][7] = self.sum_price_of_object+self.tax_of_object
 
     def build_vocher(self):
         """"""

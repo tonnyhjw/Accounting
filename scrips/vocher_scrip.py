@@ -42,9 +42,10 @@ def vocher_buy_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end
     for v_num, object_name in enumerate(object_names):
         log.debug("开始构建{}的进项凭证".format(object_name["_id"]))      # 获取本月所有购方企业名称
 
-        vis = VoucherInvoiceBuy(company_name, object_name["_id"], begin_y, begin_m, begin_d, end_y, end_m, end_d)
-        vis.vocher_num(number=v_num + 1)
-        vis.build_vocher()
+        vib = VoucherInvoiceBuy(company_name, object_name["_id"], begin_y, begin_m, begin_d, end_y, end_m, end_d)
+        vib.vocher_num(number=v_num + 1)
+        log.debug(vib.db_object)
+        vib.build_vocher()
 
     return
 
@@ -61,7 +62,7 @@ def vocher_bankstatement_insert(company_name, begin_y, begin_m, begin_d, end_y, 
     pipeline_object_name = [match, {"$group": {"_id": "$object_name"}}]
     object_names = aggregate_data(BankStatement, pipeline_object_name)
     for v_num, object_name in enumerate(object_names):
-        vbs = VoucherInvoiceBankstatement(company_name, object_name["_id"], begin_y, begin_m, begin_d, end_y, end_m, end_d)
+        vbs = VoucherBankstatement(company_name, object_name["_id"], begin_y, begin_m, begin_d, end_y, end_m, end_d)
         vbs.vocher_num(number=v_num + 1)
         vbs.build_vocher()
     return
@@ -113,7 +114,7 @@ def build_voucher_excel(company_name, begin_y, begin_m, begin_d, end_y, end_m, e
     return
 
 if __name__ == '__main__':
-    vocher_sale_insert('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
-    vocher_buy_insert('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
-    vocher_bankstatement_insert('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
-    build_voucher_excel('广州南方化玻医疗器械有限公司', 2019, 11, 1, 2019, 11, 30)
+    vocher_sale_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
+    vocher_buy_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
+    vocher_bankstatement_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
+    build_voucher_excel('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
