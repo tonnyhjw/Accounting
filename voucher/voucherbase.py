@@ -44,19 +44,25 @@ class VoucherBase(object):
             self.model.output()
         return
 
-    def vocher_num(self, method=2, number=1):
+    def vocher_num(self, number=1):
         """
         编辑凭证号
-        :param method: 0 = 收；1 = 付，2 = 转
         :param number: 凭证编号
         :return:
         """
         v_num = ["收", "付", "转"]
-        # self.model.write_cell(3, 7, v_num[method])
-        # self.model.write_cell(3, 8, str(number))
-
         self.db_object["number"] = str(number)
+        return
+
+    def transfer_method(self, method=2):
+        """
+        右上角：收、付、转
+        :param method: 0-收、1-付、2-转
+        :return:
+        """
+        v_num = ["收", "付", "转"]
         self.db_object["method"] = v_num[method]
+        log.debug("set transfer_method to {}".format(v_num[method]))
         return
 
     def write_company_name(self):
@@ -72,7 +78,7 @@ class VoucherBase(object):
             log.critical(e)
         return
 
-    def insesr_db(self):
+    def insert_db(self):
         yes = {'yes', 'y', 'ye', ''}
         no = {'no', 'n'}
 
@@ -88,7 +94,7 @@ class VoucherBase(object):
             if choice in yes:
                 log.info("跳过该凭证")
             else:
-                self.insesr_db()
+                self.insert_db()
         return
 
     def reset_db_object(self):

@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from pprint import pprint
-from typing import io
+# from typing import io
 
 from voucher import *
 from utils import get_logger
@@ -16,7 +16,7 @@ log = get_logger(__name__, level=10)
 
 class VoucherBankstatement(VoucherBase):
 
-    def __init__(self, company_name, object_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
+    def __init__(self, company_name, object_name, begin_y, begin_m, begin_d, end_y, end_m, end_d, num_in, num_out):
         super(VoucherBankstatement, self).__init__()
         self.category = "银行凭证"
         self.company_name = company_name
@@ -25,7 +25,7 @@ class VoucherBankstatement(VoucherBase):
         self.begin_date, self.end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
         self.model = None
         self.output_filename = None
-
+        self.num_in, self.num_out = num_in, num_out
 
     def load_by_object_name(self):
         """按对方户名导入"""
@@ -68,8 +68,11 @@ class VoucherBankstatement(VoucherBase):
             self.write_company_name()
             self.write_end_date()
             self.wirte_specific(self.object_name)
+            self.transfer_method(method=0)
+            self.vocher_num(self.num_in)
+            self.num_in += 1
             # self.output()
-            self.insesr_db()
+            self.insert_db()
 
             log.debug("write object_income {} to voucher".format(self.object_io['object_income']))
         elif isinstance(self.object_io, list):
@@ -98,8 +101,11 @@ class VoucherBankstatement(VoucherBase):
             self.write_company_name()
             self.write_end_date()
             self.wirte_specific(self.object_name)
+            self.transfer_method(method=1)
+            self.vocher_num(self.num_out)
+            self.num_out += 1
             # self.output()
-            self.insesr_db()
+            self.insert_db()
 
             log.debug("write object_outcome {} to voucher".format(self.object_io['object_outcome']))
         elif not self.object_name and isinstance(self.object_io, list):
@@ -165,8 +171,11 @@ class VoucherBankstatement(VoucherBase):
             self.write_company_name()
             self.write_end_date()
             self.wirte_specific("其他费用")
+            self.transfer_method(method=1)
+            self.vocher_num(self.num_out)
+            self.num_out += 1
             # self.output()
-            self.insesr_db()
+            self.insert_db()
             self.category = "银行凭证"
 
             log.debug("built voucher of {}".format(io['_id']))

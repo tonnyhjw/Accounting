@@ -8,8 +8,12 @@ from utils.mongoapi import aggregate_data
 
 log = get_logger(__name__, level=10)
 
+# 定义凭证编号（全局常量）
+num_in, num_out, num_tran = 1, 1, 1         # 收、付、转
+
 def vocher_sale_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
     begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
+    global num_tran
     pipeline = []
     match = {"$match": {"company_name": company_name, "invoice_type": "sale",
                         "billing_date": {"$gte": begin_date, "$lte": end_date}}}
@@ -23,13 +27,14 @@ def vocher_sale_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, en
         log.debug("开始构建{}的销项凭证".format(object_name["_id"]))      # 获取本月所有购方企业名称
 
         vis = VoucherInvoiceSale(company_name, object_name["_id"], begin_y, begin_m, begin_d, end_y, end_m, end_d)
-        vis.vocher_num(number=v_num+1)
+        vis.vocher_num(number=num_tran)
         vis.build_vocher()
-
+        num_tran = num_tran + 1
     return
 
 def vocher_buy_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
     begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
+    global num_tran
     pipeline = []
     match = {"$match": {"company_name": company_name, "invoice_type": "buy",
                         "belong_date": {"$gte": begin_date, "$lte": end_date}}}
@@ -43,14 +48,14 @@ def vocher_buy_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end
         log.debug("开始构建{}的进项凭证".format(object_name["_id"]))      # 获取本月所有购方企业名称
 
         vib = VoucherInvoiceBuy(company_name, object_name["_id"], begin_y, begin_m, begin_d, end_y, end_m, end_d)
-        vib.vocher_num(number=v_num + 1)
-        log.debug(vib.db_object)
+        vib.vocher_num(number=num_tran)
         vib.build_vocher()
-
+        num_tran = num_tran + 1
     return
 
 def vocher_bankstatement_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
     begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
+    global num_in, num_out
     match = {"$match": {"company_name": company_name,
                         "operation_time": {"$gte": begin_date, "$lt": end_date}}}
 
@@ -62,9 +67,9 @@ def vocher_bankstatement_insert(company_name, begin_y, begin_m, begin_d, end_y, 
     pipeline_object_name = [match, {"$group": {"_id": "$object_name"}}]
     object_names = aggregate_data(BankStatement, pipeline_object_name)
     for v_num, object_name in enumerate(object_names):
-        vbs = VoucherBankstatement(company_name, object_name["_id"], begin_y, begin_m, begin_d, end_y, end_m, end_d)
-        vbs.vocher_num(number=v_num + 1)
+        vbs = VoucherBankstatement(company_name, object_name["_id"], begin_y, begin_m, begin_d, end_y, end_m, end_d, num_in, num_out)
         vbs.build_vocher()
+        num_in, num_out = vbs.num_in, vbs.num_out
     return
 
 def build_voucher_excel(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d,

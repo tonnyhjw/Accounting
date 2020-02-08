@@ -87,7 +87,8 @@ class VoucherInvoiceBuy(VoucherBase):
         self.sum_price()
         self.tax()
         self.object_loan()
-        self.insesr_db()
+        self.transfer_method()
+        self.insert_db()
         # self.output()
 
 
