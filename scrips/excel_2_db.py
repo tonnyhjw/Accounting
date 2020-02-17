@@ -3,6 +3,8 @@ from utils import mongoapi
 
 log = get_logger(__name__, level=10)
 
+"""银行对账单、进项发票、销项发票存入数据库"""
+
 def all_excel_insert_db(company_name):
     bsa = mongoapi.BankStatementApi(company=company_name)
     bsa.insert_all()

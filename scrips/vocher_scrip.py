@@ -86,7 +86,10 @@ def build_voucher_excel(company_name, begin_y, begin_m, begin_d, end_y, end_m, e
     log.debug(model_dir)
 
     for voucher in vouchers_matched:
-        output_filename = "{}-{}".format(voucher.get('category', '未定义凭证类型'), voucher.get('specific', '未定义公司名'))
+        output_filename = "{}-{}-{}-{}".format(voucher.get("method"),
+                                               voucher.get("number"),
+                                               voucher.get('category', '未定义凭证类型')[0],
+                                               voucher.get('specific', '未定义公司名'))
         log.debug("start writing voucher excel <{}>".format(output_filename))
         # 建立excel
         model = Xlsx(model_dir, output_path="{}/{}.xlsx".format(output_dir, output_filename))
@@ -119,7 +122,7 @@ def build_voucher_excel(company_name, begin_y, begin_m, begin_d, end_y, end_m, e
     return
 
 if __name__ == '__main__':
-    vocher_sale_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
-    vocher_buy_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
-    vocher_bankstatement_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
+    # vocher_sale_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
+    # vocher_buy_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
+    # vocher_bankstatement_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
     build_voucher_excel('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)

@@ -115,3 +115,4 @@ venv.bak/
 *.rar
 *.zip
 *.AIS
+*.dbf

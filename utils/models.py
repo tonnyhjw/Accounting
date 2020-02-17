@@ -184,14 +184,14 @@ class AccountBalance(Document):
     subject_lv2 = StringField(default=None)             # 二级科目
     subject_lv3 = StringField(default=None)             # 三级科目
 
-    init_balance_debit = FloatField()                   # 期初余额(借方)
-    init_balance_credit = FloatField()                  # 期初余额(贷方)
-    cur_amount_debit = FloatField()                     # 本期发生额(借方)
-    cur_amount_credit = FloatField()                    # 本期发生额(贷方)
-    this_year_amount_debit = FloatField()               # 本年发生额(借方)
-    this_year_amount_credit = FloatField()              # 本年发生额(贷方)
-    cur_balance_debit = FloatField(required=True)       # 期末余额(借方)
-    cur_balance_credit = FloatField(required=True)      # 期末余额(贷方)
+    init_balance_debit = FloatField()                                           # 期初余额(借方)
+    init_balance_credit = FloatField()                                          # 期初余额(贷方)
+    cur_amount_debit = FloatField()                                             # 本期发生额(借方)
+    cur_amount_credit = FloatField()                                            # 本期发生额(贷方)
+    this_year_amount_debit = FloatField(required=True, default=0)               # 本年累计发生额(借方)
+    this_year_amount_credit = FloatField(required=True, default=0)              # 本年累计发生额(贷方)
+    cur_balance_debit = FloatField(required=True)                               # 期末余额(借方)
+    cur_balance_credit = FloatField(required=True)                              # 期末余额(贷方)
 
     def json(self):
         account_balance_dict = {
@@ -202,12 +202,27 @@ class AccountBalance(Document):
         return account_balance_dict
 
     meta = {
-        "indexes": ["company_name", "subject_lv1", "subject_lv2", "subject_lv3"]
+        "indexes": ["date", "company_name", "subject_lv1", "subject_lv2", "subject_lv3"]
     }
 
+class Acctid(Document):
+    """科目代码"""
+    company_name = StringField(required=True)   # 公司名称
+    acctid = StringField(required=True)         # 科目代码
+    acct_name = StringField(required=True)      # 科目名称
+    acct_type = StringField()                   # 科目类别
+    balance_direction = StringField()           # 余额方向
+    def json(self):
+        acct_data = {
+            "company_name": self.company_name,
+            "acctid": self.acctid,
+            "acct_name": self.acct_name
+        }
+        return acct_data
 
-
-
+    meta = {
+        "indexes": ["acctid", "company_name"]
+    }
 
 
 

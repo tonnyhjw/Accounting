@@ -186,6 +186,10 @@ class InvoiceBuyApi(InvoiceBaseApi):
         return self.xls
 
 class InitialOpenningBalanceApi():
+    """
+    期初余额API
+    """
+
     input_dir = "input/initial_openning_balance"
     subject_col = 2                             # 科目所在列
     code_col = 1                                # 科目代码所在列
@@ -237,28 +241,63 @@ class InitialOpenningBalanceApi():
             AccountBalance(company_name=self.company_name, is_openning_balance=True, date=datetime(year=self.year, month=self.month, day=25),
                            subject_lv1=subject_lv1, subject_lv2=subject_lv2, subject_lv3=subject_lv3,
                            cur_balance_debit=row[self.cur_balance_debit], cur_balance_credit=row[self.cur_balance_credit]).save()
-            # if object_name in SINGLE_GRADE:
-            #     first_grade = object_name
-            # elif object_name in DOUBLE_GRADE:
-            #     first_grade = object_name
-            #     continue
-            # elif object_name in TRIPLE_GRADE:
-            #     first_grade = object_name
-            # else:
-            #     pass
-            #
-            # log.debug(row)
-            # InitialOpenningBalance(company_name=self.company_name, object_name=row[self.object_name].strip(),
-            #                        debita_init_openning_balance=row[self.debita_init_openning_balance],
-            #                        fidem_init_openning_balance=row[self.fidem_init_openning_balance],
-            #                        first_grade=first_grade).save()
-
 
         return
 
 
     def read_excel(self, filepath):
         return Xlsx(filepath)
+
+
+class AcctidApi():
+    """科目代码"""
+    input_dir = "input/acctid"
+    acctid_col = 0
+    acct_name_col = 1
+    acct_type_col = 3
+    balance_direction_col = 5
+    def __init__(self, company_name):
+        self.company_name = company_name
+
+    def insert_all(self):
+        if not self.input_dir:
+            log.critical("please define input_dir")
+            return
+        xlsx_dir = os.path.join(PROJECT_ROOT, self.input_dir)
+        self.remove_documents_of_company()
+        for filename in os.listdir(xlsx_dir):
+            filepath = os.path.join(xlsx_dir, filename)
+            log.debug(filepath)
+            xl = self.read_excel(filepath)
+            xl_content = xl.contents(row_start=2)
+
+            try:
+                self.insert_one_xlsx(xl_content)
+            except Exception as e:
+                log.critical("error occur: {}".format(e))
+                continue
+
+    def insert_one_xlsx(self, xl_contents):
+
+        for row in xl_contents:
+            log.debug(row)
+            acctid = row[self.acctid_col].strip()
+            acct_name = row[self.acct_name_col].strip()
+            acct_type = row[self.acct_type_col].strip()
+            balance_direction = row[self.balance_direction_col].strip()
+
+            Acctid(company_name=self.company_name, acctid=acctid, acct_name=acct_name,
+                   acct_type=acct_type, balance_direction=balance_direction).save()
+
+        return
+
+    def read_excel(self, filepath):
+        return Xlsx(filepath)
+
+    def remove_documents_of_company(self):
+        Acctid.objects(company_name=self.company_name).delete()
+        log.info("delete accids of {}".format(self.company_name))
+        return
 
 
 def aggregate_data(table, pipeline):
@@ -268,7 +307,9 @@ def aggregate_data(table, pipeline):
 if __name__ == '__main__':
     # bsa = BankStatementApi(company="广州南方化玻医疗器械有限公司")
     # bsa.insert_all()
-    isa = InvoiceSaleApi("广州南方化玻医疗器械有限公司")
-    isa.insert_all()
+    # isa = InvoiceSaleApi("广州南方化玻医疗器械有限公司")
+    # isa.insert_all()
     # iba = InvoiceBuyApi("广州南方化玻医疗器械有限公司")
     # iba.insert_all()
+    aa = AcctidApi(company_name="广州南方化玻医疗器械有限公司")
+    aa.insert_all()
