@@ -62,12 +62,12 @@ class KingdeeInterface(object):
     def build_records(self, voucher):
         """处理凭证种所有科目"""
         # pprint(voucher)
-        self.build_one_racord(voucher['row_1'], voucher['company_name'], voucher["date"], voucher["number"])
-        self.build_one_racord(voucher['row_2'], voucher['company_name'], voucher["date"], voucher["number"])
-        self.build_one_racord(voucher['row_3'], voucher['company_name'], voucher["date"], voucher["number"])
-        self.build_one_racord(voucher['row_4'], voucher['company_name'], voucher["date"], voucher["number"])
-        self.build_one_racord(voucher['row_5'], voucher['company_name'], voucher["date"], voucher["number"])
-        self.build_one_racord(voucher['row_6'], voucher['company_name'], voucher["date"], voucher["number"])
+        self.build_one_racord(voucher['row_1'], voucher['company_name'], voucher["date"], voucher["number"], 0., voucher["method"])
+        self.build_one_racord(voucher['row_2'], voucher['company_name'], voucher["date"], voucher["number"], 1., voucher["method"])
+        self.build_one_racord(voucher['row_3'], voucher['company_name'], voucher["date"], voucher["number"], 2., voucher["method"])
+        self.build_one_racord(voucher['row_4'], voucher['company_name'], voucher["date"], voucher["number"], 3., voucher["method"])
+        self.build_one_racord(voucher['row_5'], voucher['company_name'], voucher["date"], voucher["number"], 4., voucher["method"])
+        self.build_one_racord(voucher['row_6'], voucher['company_name'], voucher["date"], voucher["number"], 5., voucher["method"])
 
         return
 
@@ -79,7 +79,7 @@ class KingdeeInterface(object):
         table_out.close()
         return
 
-    def build_one_racord(self, row, company_name, date, fnum):
+    def build_one_racord(self, row, company_name, date, fnum, fentryid, fgroup):
         """根据每张凭证每行生成record"""
         lv1_idx, lv2_idx, acct_name = 4, 5, None
         if row == [""]*8:
@@ -118,6 +118,19 @@ class KingdeeInterface(object):
         new_record["fdate"] = date
         new_record["fperiod"] = float(date.month)
         new_record["fnum"] = fnum
+        new_record["fentryid"] = fentryid
+        new_record["fgroup"] = fgroup
+
+        # 写入借贷
+        assert row[6] != '' or row[7] != '', "Row missing credit debit! row:{}".format(row)
+        if row[6] != '' and not row[7]:
+            new_record["fdebit"] = row[6]
+            new_record["fdc"] = "D"
+            new_record["ffcyamt"] = row[6]
+        elif row[7] != '' and not row[6]:
+            new_record["fcredit"] = row[7]
+            new_record["fdc"] = "C"
+            new_record["ffcyamt"] = row[7]
 
         self.records.append(new_record)
         return
@@ -133,9 +146,13 @@ class KingdeeInterface(object):
 
         return input_str
 
+    def fail_records(self):
+        log.critical("record fails")
+        pprint(self.incorrect_acctname)
+
 if __name__ == '__main__':
     ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2019, 12)
     ki.load_vouchers()
     ki.vouchers2records()
     ki.write_dbf()
-    pprint(ki.incorrect_acctname)
+    ki.fail_records()

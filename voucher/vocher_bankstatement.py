@@ -57,7 +57,7 @@ class VoucherBankstatement(VoucherBase):
             self.load_model(output_filename=self.output_filename+"-收入")
 
             self.db_object["row_1"][2] = "收款"
-            self.db_object["row_1"][4] = "银行存款"
+            self.db_object["row_1"][4] = "银行存款*"
             self.db_object["row_1"][6] = self.object_io['object_income']
 
             self.db_object["row_2"][2] = "收款"
@@ -90,7 +90,7 @@ class VoucherBankstatement(VoucherBase):
             self.load_model(output_filename=self.output_filename+"-支出")
 
             self.db_object["row_2"][2] = "付款"
-            self.db_object["row_2"][4] = "银行存款"
+            self.db_object["row_2"][4] = "银行存款*"
             self.db_object["row_2"][7] = self.object_io['object_outcome']
 
             self.db_object["row_1"][2] = "收款"
