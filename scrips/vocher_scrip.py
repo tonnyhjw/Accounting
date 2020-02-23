@@ -1,6 +1,7 @@
-from pprint import pprint
-import os
+import os, re
 from datetime import datetime
+from pprint import pprint
+
 
 from voucher import *
 from utils import *
@@ -12,7 +13,8 @@ log = get_logger(__name__, level=10)
 num_in, num_out, num_tran = 1, 1, 1         # 收、付、转
 
 def vocher_sale_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
-    begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
+    """从数据库销项发票，生成销项凭证，并存入数据库"""
+    begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d, hour=23, minute=59,second=59)
     global num_tran
     pipeline = []
     match = {"$match": {"company_name": company_name, "invoice_type": "sale",
@@ -23,6 +25,13 @@ def vocher_sale_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, en
     # pprint(pipeline)
 
     object_names = aggregate_data(Invoice, pipeline)
+    # 如果有可插入的凭证，则清楚已存在的同时期所有凭证，重新插入凭证。否则中止插入。
+    if object_names:
+        delete_vouchers_of_range(begin_date, end_date, {"company_name": company_name, "category": "销项发票凭证"})
+    else:
+        log.critical("Aborted! Query sale voucher, found: {}".format(object_names))
+        return
+
     for v_num, object_name in enumerate(object_names):
         log.debug("开始构建{}的销项凭证".format(object_name["_id"]))      # 获取本月所有购方企业名称
 
@@ -33,6 +42,7 @@ def vocher_sale_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, en
     return
 
 def vocher_buy_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
+    """从数据库进项发票，生成进项凭证，并存入数据库"""
     begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
     global num_tran
     pipeline = []
@@ -44,6 +54,13 @@ def vocher_buy_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end
     # pprint(pipeline)
 
     object_names = aggregate_data(Invoice, pipeline)
+    # 如果有可插入的凭证，则清楚已存在的同时期所有凭证，重新插入凭证。否则中止插入。
+    if object_names:
+        delete_vouchers_of_range(begin_date, end_date, {"company_name": company_name, "category": "进项发票凭证"})
+    else:
+        log.critical("Aborted! Query sale voucher, found: {}".format(object_names))
+        return
+
     for v_num, object_name in enumerate(object_names):
         log.debug("开始构建{}的进项凭证".format(object_name["_id"]))      # 获取本月所有购方企业名称
 
@@ -54,7 +71,8 @@ def vocher_buy_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end
     return
 
 def vocher_bankstatement_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
-    begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
+    """从数据库银行对账单，生成银行凭证，并存入数据库"""
+    begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d, hour=23, minute=59,second=59)
     global num_in, num_out
     match = {"$match": {"company_name": company_name,
                         "operation_time": {"$gte": begin_date, "$lt": end_date}}}
@@ -66,6 +84,13 @@ def vocher_bankstatement_insert(company_name, begin_y, begin_m, begin_d, end_y, 
 
     pipeline_object_name = [match, {"$group": {"_id": "$object_name"}}]
     object_names = aggregate_data(BankStatement, pipeline_object_name)
+    # 如果有可插入的凭证，则清楚已存在的同时期所有凭证，重新插入凭证。否则中止插入。
+    if object_names:
+        delete_vouchers_of_range(begin_date, end_date, {"company_name": company_name, "category": re.compile("银行凭证.*")})
+    else:
+        log.critical("Aborted! Query sale voucher, found: {}".format(object_names))
+        return
+
     for v_num, object_name in enumerate(object_names):
         vbs = VoucherBankstatement(company_name, object_name["_id"], begin_y, begin_m, begin_d, end_y, end_m, end_d, num_in, num_out)
         vbs.build_vocher()
@@ -75,7 +100,7 @@ def vocher_bankstatement_insert(company_name, begin_y, begin_m, begin_d, end_y, 
 def build_voucher_excel(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d,
                         model_sub_dir="xlsx_model/记账凭证模板.xlsx"):
     """从数据库导出所有目标公司的凭证excel"""
-    begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
+    begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d, hour=23, minute=59,second=59)
     match = {"$match": {"company_name": company_name,
                         "date": {"$gte": begin_date, "$lte": end_date}}}
     pipeline_object_name = [match]
@@ -121,8 +146,19 @@ def build_voucher_excel(company_name, begin_y, begin_m, begin_d, end_y, end_m, e
 
     return
 
+def delete_vouchers_of_range(begin_date, end_date, other_param={}):
+    date_filter = {
+        "date__gte": begin_date,
+        "date__lte": end_date,
+    }
+    delete_filter = {**date_filter, **other_param}
+    delete_docs(Voucher, delete_filter)
+
+    log.info("delete documents from {} to {}".format(begin_date, end_date))
+    return
+
 if __name__ == '__main__':
-    # vocher_sale_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
-    # vocher_buy_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
-    # vocher_bankstatement_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
-    build_voucher_excel('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
+    vocher_sale_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
+    vocher_buy_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
+    vocher_bankstatement_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
+    # build_voucher_excel('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)

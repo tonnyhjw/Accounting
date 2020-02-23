@@ -171,7 +171,7 @@ class Voucher(Document):
         return voucher_dict
 
     meta = {
-        "indexes": ["company_name"],
+        "indexes": ["company_name", "method", "number"],
         "ordering": ["-year"]
     }
 

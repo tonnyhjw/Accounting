@@ -56,12 +56,12 @@ class VoucherInvoiceSale(VoucherBase):
         log.debug(self.tax_of_object)
         self.model.write_cell(8, 2, "销项税")
         self.model.write_cell(8, 4, "应交税费")
-        self.model.write_cell(8, 5, "应交增值税-销项税")
+        self.model.write_cell(8, 5, "销项税额")
         self.model.write_cell(8, 7, self.tax_of_object)
 
         self.db_object["row_3"][2] = "销项税"
         self.db_object["row_3"][4] = "应交税费"
-        self.db_object["row_3"][5] = "应交增值税-销项税"
+        self.db_object["row_3"][5] = "销项税额"
         self.db_object["row_3"][7] = self.tax_of_object
         return
 
@@ -93,5 +93,7 @@ class VoucherInvoiceSale(VoucherBase):
 
 
 if __name__ == '__main__':
-    vs = VoucherInvoiceSale('广州南方化玻医疗器械有限公司', "广州市中医医院", 2019, 10, 1, 2019, 10, 31)
-    vs.build_vocher()
+    vs = VoucherInvoiceSale('广州南方化玻医疗器械有限公司', "广州市中医医院", 2019, 12, 1, 2019, 12, 31)
+    vs.delete_all_doc()
+    # vs.build_vocher()
+

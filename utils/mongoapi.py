@@ -264,6 +264,7 @@ class AcctidApi():
             log.critical("please define input_dir")
             return
         xlsx_dir = os.path.join(PROJECT_ROOT, self.input_dir)
+        # 清空当前公司所有科目代码
         self.remove_documents_of_company()
         for filename in os.listdir(xlsx_dir):
             filepath = os.path.join(xlsx_dir, filename)
@@ -302,6 +303,28 @@ class AcctidApi():
 
 def aggregate_data(table, pipeline):
     return list(table.objects.aggregate(*pipeline))
+
+def delete_docs(table, filter):
+    return table.objects(**filter).delete()
+
+def find_acctid(acct_name, company_name):
+    """获取科目代码"""
+    if not isinstance(acct_name, list):
+        assert TypeError, "Input acct is not list"
+    elif acct_name == [''] * 8:
+        log.debug('skip! attc is empty')
+        return
+
+    match = {"$match":{"company_name":company_name, "acct_name":acct_name}}
+    project = {"$project": {"acctid": 1, "_id": 0}}
+    pipeline = [match, project]
+    acctid = aggregate_data(Acctid, pipeline)
+
+    if not acctid:
+        raise ValueError("acctid is {}, Can not find acctid by acct_name : {}".format(acctid, acct_name))
+    assert len(acctid) <= 2, "found more than 1 acctid: {}".format(acctid)
+
+    return acctid[0].get('acctid')
 
 
 if __name__ == '__main__':

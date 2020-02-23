@@ -125,40 +125,48 @@ class VoucherBankstatement(VoucherBase):
             if io['_id'] == '手续费':
                 self.category += "-手续费"
 
-                self.db_object["row_1"][2] = "支付手续费"
-                self.db_object["row_2"][2] = "支付手续费"
+                self.db_object["row_1"][2] = "手续费"
+                self.db_object["row_2"][2] = "手续费"
                 self.db_object["row_1"][4] = "财务费用"
                 self.db_object["row_1"][5] = "手续费"
-            elif io['_id'] == '电话费':
+            elif io['_id'] == '话费':
                 self.category += "-电话费"
 
-                self.db_object["row_1"][2] = "付电话费"
-                self.db_object["row_2"][2] = "付电话费"
+                self.db_object["row_1"][2] = "话费"
+                self.db_object["row_2"][2] = "话费"
                 self.db_object["row_1"][4] = "管理费用"
                 self.db_object["row_1"][5] = "办公费"
             elif io['_id'] == '社保费':
                 self.category += "-社保费"
 
-                self.db_object["row_1"][2] = "交社保费"
-                self.db_object["row_2"][2] = "交社保费"
+                self.db_object["row_1"][2] = "社保费"
+                self.db_object["row_2"][2] = "社保费"
                 self.db_object["row_1"][4] = "管理费用"
                 self.db_object["row_1"][5] = "社保费"
             elif io['_id'] == 'TG':
                 self.category += "-TG"
 
-
-                self.db_object["row_1"][2] = "交税"
-                self.db_object["row_2"][2] = "交税"
+                self.db_object["row_1"][2] = "TG"
+                self.db_object["row_2"][2] = "TG"
                 self.db_object["row_1"][4] = "应交税费"
+                self.db_object["row_1"][5] = "总应交税费"
             elif io['_id'] == '现金':
                 self.category += "-现金"
-
 
                 self.db_object["row_1"][2] = "提现"
                 self.db_object["row_2"][2] = "提现"
                 self.db_object["row_1"][4] = "现金"
+            elif io['_id'] == '存息':
+                self.category += "-存息"
+
+                self.db_object["row_1"][2] = "存息"
+                self.db_object["row_2"][2] = "存息"
+                self.db_object["row_1"][4] = "账务费用"
+                self.db_object["row_1"][5] = "利息支出"
             else:
                 log.debug("not defined other expense")
+                raise ValueError("Unrecognized abstract: {}".format(io['_id']))
+
 
             self.model.write_cell(6, 6, io['object_outcome'])
             self.model.write_cell(7, 4, "银行存款")

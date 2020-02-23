@@ -56,14 +56,14 @@ class VoucherInvoiceBuy(VoucherBase):
         # pprint(pipeline)
         self.tax_of_object = aggregate_data(Invoice, pipeline)[0]['total']
         log.debug(self.tax_of_object)
-        self.model.write_cell(7, 2, "进项税")
+        self.model.write_cell(7, 2, "进项税额")
         self.model.write_cell(7, 4, "应交税费")
-        self.model.write_cell(7, 5, "应交增值税-进项税")
+        self.model.write_cell(7, 5, "进项税额")
         self.model.write_cell(7, 6, self.tax_of_object)
 
-        self.db_object["row_2"][2] = "进项税"
+        self.db_object["row_2"][2] = "进项税额"
         self.db_object["row_2"][4] = "应交税费"
-        self.db_object["row_2"][5] = "应交增值税-进项税"
+        self.db_object["row_2"][5] = "进项税额"
         self.db_object["row_2"][6] = self.tax_of_object
         return self.sum_price
 

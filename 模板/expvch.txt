@@ -1,0 +1,151 @@
+Following is the standard voucher I/O structure provided by Kingdee Leger.
+The structure can be built by either dBASE or Foxpro. When you meet matter
+during exporting from the KingDee ledger or importing from the standard
+dBASE vocher, you can refer to following information.
+
+凭证引入和引出接口标准：
+
+Field No. FieldName  FieldType FieldSize Decimal Description
+ 1        FDate      Date          8             Input date (日期)
+ 2        FPeriod    Number        4             Accounting period(期间）
+ 3        FGroup     Char          4             The voucher's category
+							       (凭证字)
+ 4        FNum       Number        4             The voucher's I.D. no.
+						             (凭证号)
+ 5        FEntryID   Number        4             The I.D. no. of entry in
+                                                 the voucher(分录号)
+ 6        FExp       Char          40            Voucher's explanation                       
+                                                 (摘要)
+ 7        FAcctID    Char          30            Account number(科目代码) 
+ 8*       FClsName1  Char          20            Name of calculation 
+                                                 category                    
+                                                 (自定义的核算项目类别名称，即GLACCT。FCLSID对应的核算项目类别名称。）
+ 9*       FObjID1    Char          10            ID no. of calculation     
+                                                 item
+10*       FObjName1  Char          20            Name of calculation item
+11*       FClsName2  Char          20            
+12*       FObjID2    Char          10		 (核算项目代码)
+13*       FObjName2  Char          20            (核算项目名称为往来单位）
+14*       FClsName3  Char          20                               
+15*       FObjID3    Char          10                               
+16*       FObjName3  Char          20            (核算项目名称为部门）
+17*       FClsName4  Char          20            
+18*       FObjID4    Char          10		 (核算项目代码)
+19*       FObjName4  Char          20            (核算项目名称为职员)
+
+20        FTransID   Char          10            ID no. of transaction 
+                                                 trade
+	                                           (往来业务编号)
+21        FCyID      Char          3             ID no of original 
+                                                 currency
+                                                 (币别代码)
+22        FExchRate  Number        19      10    Exchange rate(汇率)
+23        FDC        Char          1             Only can be 'D'(Debit 
+						             Account) or 'C'(Credit 
+							       Account)(借方或贷方)
+24        FFCyAmt    Number        14       2    Amount(原币金额）?
+25        FQty       Number        8        2    Quantity(数量)
+26        FPrice     Number        10       7    Unit price(单价）
+27        FDebit     Number        14       2    Debit amount(借方发生额)
+28        FCredit    Number        14       2    Credit amount                   
+                                                 (贷方发生额)
+29        FSettlCode Char          8             Code of settlement	                    
+                                                 (结算方式)
+30        FSettleNo  Char          8             Settlement no.(结算单号）
+31        FPreparer  Char          8             Name of preparer(制单人)
+32        FPay       Char          8             Name of payer(付款人)
+33        FCash      Char          8             Name of cashier(出纳)
+34        FPoster    Char          8             Name of person who 
+                                                 posted
+                                                 the voucher(过帐人）
+35        FChecker   Char          8             Name of person who        
+                                                 checked
+                                                 the voucher(审核人)
+36        FAttchment Number        5             Number of the attachment
+                                                 closed in the voucher
+                                                 (附件张数）
+37        FPosted    Logic         1             Whether the voucher is
+                                                 posted(凭证是否已过帐)
+
+
+
+38*       FModule    Char          2             Indicates the source of 
+                                                 the voucher if the   
+                                                 voucher is an automatic 
+                                                 transfer
+                                                 voucher(自动转帐凭证)
+39        FDeleted   Logic         1             Whether it is a deleted
+                                                 voucher(凭证删除标志)
+40        FSerialNo  Number        10            Serial no. of the 
+                                                 voucher
+                                                 (凭证序列号)
+
+现金日记帐引入和引出接口标准：
+
+Field No. FieldName  FieldType FieldSize Decimal Description
+1         FDATE      DATE      8                 日期
+2         FORDERID   Number    长整型            序号                  
+3         FPERIOD    Number    长整型            会计期间
+4         FGROUP     Char      4                 凭证字
+5         FNUM       Number    长整型            凭证号
+6         FENTRYID   Number    长整型            分录号
+7         FACCTID    Char      15                科目代码
+8 	  FCYID      Char      3                 货币类型 
+9         FDEBIT     Number    14         2      借方金额 
+10        FCREDIT    Number    14         2      贷方金额
+11	  FBALANCE   Number    14         2      余额
+12	  FACCTIDSD  Char      15                科目方向 
+13 	  FHANDLER   Char      10                经手人
+14	  FEXP       Char      60                摘要
+
+
+
+银行日记帐引入和引出接口标准：
+
+Field No. FieldName  FieldType FieldSize Decimal Description
+1         FDATE      DATE      8                 日期
+2	  FSETTLEDAT DATE      8		 结算日期
+3         FPERIOD    Number    长整型            会计期间
+4         FGROUP     Char      4                 凭证字
+5         FNUM       Number    长整型            凭证号
+6         FENTRYID   Number    长整型            分录号
+7         FACCTID    Char      15                科目代码
+8 	  FCYID      Char      3                 货币类型 
+9	  FSETTLECD  Char      8		 结算方式
+10	  FSETTLENO  Char      8    		 结算号
+11        FDEBIT     Number    14         2      借方金额 
+12        FCREDIT    Number    14         2      贷方金额
+13	  FBALANCE   Number    14         2      余额
+14    	  FACCTIDSD  Char      15                科目方向   
+15 	  FHANDLER   Char      10                经手人
+16	  FEXP       Char      60                摘要
+
+
+
+银行对帐单的引入和引出接口标准
+
+Field No. FieldName  FieldType FieldSize Decimal Description
+1         FDATE      DATE      8                 日期
+2         FACCTID    Char      15                科目代码
+3 	  FCYID      Char      3                 货币类型 
+4	  FSETTLECD  Char      8		 结算方式
+5	  FSETTLENO  Char      8    		 结算号
+6         FORDERID   Number    长整型            序号        
+7         FDEBIT     Number    14         2      借方金额 
+8         FCREDIT    Number    14         2      贷方金额
+9         FEXP       Char      60                摘要
+
+
+****Note*****(字段说明)
+1. The field of FModule can be the following value: (“Fmodule”字段)
+   'FA' ----- changes of fixed assets(固定资产变动)
+   'DA' ----- adjustment of accumulation because of changes of fixed 
+              assets(固定资产变动引起的折旧变动）
+   'FD' ----- provide accumulation of fixed assets(计提折旧固定资产）
+   'RA' ----- adjustment of period-end exchange rate(期未调汇)
+   'GL' ----- transfer the profit and loss of current period 
+              (结转当期损益）
+   'PA' ----- distribution of payroll(工资分配)
+
+2. The fields of FClsName and FObjName (1,2,3) are about the calculation item.(核算项目、核算项目类别)
+   The FClsName(1,2,3) can be found when you maintain the calculation item in the Kingdee Ledger, such as 'Department','Staff','Customer' etc. And the FObjName(1,2,3) (and FObjID(1,2,3)) is the detailed calculation item under the calculation category, such as 'Kingdee' under the category 'Customer', etc.(核算项目类别指“部门”、“职员”、“客户”等)
