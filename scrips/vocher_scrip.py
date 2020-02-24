@@ -25,7 +25,7 @@ def vocher_sale_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, en
     # pprint(pipeline)
 
     object_names = aggregate_data(Invoice, pipeline)
-    # 如果有可插入的凭证，则清楚已存在的同时期所有凭证，重新插入凭证。否则中止插入。
+    # 如果有可插入的凭证，则清除已存在的同时期所有凭证，重新插入凭证。否则中止插入。
     if object_names:
         delete_vouchers_of_range(begin_date, end_date, {"company_name": company_name, "category": "销项发票凭证"})
     else:
@@ -54,7 +54,7 @@ def vocher_buy_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end
     # pprint(pipeline)
 
     object_names = aggregate_data(Invoice, pipeline)
-    # 如果有可插入的凭证，则清楚已存在的同时期所有凭证，重新插入凭证。否则中止插入。
+    # 如果有可插入的凭证，则清除已存在的同时期所有凭证，重新插入凭证。否则中止插入。
     if object_names:
         delete_vouchers_of_range(begin_date, end_date, {"company_name": company_name, "category": "进项发票凭证"})
     else:
@@ -84,7 +84,7 @@ def vocher_bankstatement_insert(company_name, begin_y, begin_m, begin_d, end_y, 
 
     pipeline_object_name = [match, {"$group": {"_id": "$object_name"}}]
     object_names = aggregate_data(BankStatement, pipeline_object_name)
-    # 如果有可插入的凭证，则清楚已存在的同时期所有凭证，重新插入凭证。否则中止插入。
+    # 如果有可插入的凭证，则清除已存在的同时期所有凭证，重新插入凭证。否则中止插入。
     if object_names:
         delete_vouchers_of_range(begin_date, end_date, {"company_name": company_name, "category": re.compile("银行凭证.*")})
     else:

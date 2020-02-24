@@ -60,6 +60,7 @@ class BankStatementApi():
             return datetime.strptime(input_time, "%Y%m%d %H:%M:%S")
 
 
+
 class InvoiceBaseApi():
     input_dir = None
     row_start = 0
@@ -153,14 +154,14 @@ class InvoiceBuyApi(InvoiceBaseApi):
     object_tax_num = 4  # 购方税号
     billing_date = 3  # 开票日期
     select_date = 9   # 勾选日期
-    belong_date = (1, 7)
+    belong_date = (1, 7) # 所属日期
     sum_price = 6  # 金额
     # tax_rate = 15  # 税率
     tax = 7  # 税额
     # tax_category_code = 17  # 税收分类编码
     input_dir = "input/invoice/buy"
     invoice_type = "buy"
-    row_start = 4
+    row_start = 3
     end_before_last_row = 0
 
     def insert_one_xlsx(self, xl_contents):

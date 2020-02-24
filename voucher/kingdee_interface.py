@@ -62,6 +62,7 @@ class KingdeeInterface(object):
     def build_records(self, voucher):
         """处理凭证种所有科目"""
         # pprint(voucher)
+        log.debug("building records of voucher {}-{} {}".format(voucher.get('method'), voucher.get('number'), voucher.get('category')))
         self.build_one_racord(voucher['row_1'], voucher['company_name'], voucher["date"], voucher["number"], 0., voucher["method"])
         self.build_one_racord(voucher['row_2'], voucher['company_name'], voucher["date"], voucher["number"], 1., voucher["method"])
         self.build_one_racord(voucher['row_3'], voucher['company_name'], voucher["date"], voucher["number"], 2., voucher["method"])

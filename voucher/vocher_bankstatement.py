@@ -173,7 +173,9 @@ class VoucherBankstatement(VoucherBase):
             self.model.write_cell(7, 7, io['object_outcome'])
 
             self.db_object["row_1"][6] = io['object_outcome']
-            self.db_object["row_2"][4] = "银行存款"
+            self.db_object["row_1"][7] = io['object_income']
+            self.db_object["row_2"][4] = "银行存款*"
+            self.db_object["row_2"][6] = io['object_income']
             self.db_object["row_2"][7] = io['object_outcome']
 
             self.write_company_name()
