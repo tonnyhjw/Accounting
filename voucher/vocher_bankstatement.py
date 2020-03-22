@@ -37,11 +37,12 @@ class VoucherBankstatement(VoucherBase):
             group = {"$group": {"_id": "$object_name",
                                 "object_income": {"$sum": '$income'},
                                 "object_outcome": {"$sum": '$outcome'}}}
-            self.object_io = aggregate_data(BankStatement, [match, group])[0]
+            self.object_io = aggregate_data(BankStatement, [match])
+            # self.object_io = aggregate_data(BankStatement, [match, group])[0]
             self.output_filename = "银行凭证-" + self.object_name
             self.wirte_specific(specific=self.object_name)
         else:
-            log.debug("loading other expense data")
+            log.debug("读取无对方名的银行对账单记录")
             group = {"$group": {"_id": "$abstract",
                                 "object_income": {"$sum": '$income'},
                                 "object_outcome": {"$sum": '$outcome'}}}
@@ -52,18 +53,50 @@ class VoucherBankstatement(VoucherBase):
 
     def income(self):
         self.reset_db_object()
-        if self.object_name and self.object_io['object_income']:
+        """ self.object_io = 
+        [{'_id': ObjectId('5e6cc9cdebb2bf0764fb920d'),
+          'abstract': '电汇',
+          'balance': 478528.47,
+          'bank': '广州银行',
+          'company_name': '广州南方化玻医疗器械有限公司',
+          'income': 3000.0,
+          'insert_time': datetime.datetime(2020, 3, 14, 20, 10, 53, 650000),
+          'object_account': '\xa080020000006948766',
+          'object_name': '四会市人民医院',
+          'operation_time': datetime.datetime(2020, 1, 31, 0, 0),
+          'outcome': 0.0},
+         {'_id': ObjectId('5e6cc9cdebb2bf0764fb920e'),
+          'abstract': '电汇',
+          'balance': 480478.47,
+          'bank': '广州银行',
+          'company_name': '广州南方化玻医疗器械有限公司',
+          'income': 1950.0,
+          'insert_time': datetime.datetime(2020, 3, 14, 20, 10, 53, 653000),
+          'object_account': '\xa080020000006948766',
+          'object_name': '四会市人民医院',
+          'operation_time': datetime.datetime(2020, 1, 31, 0, 0),
+          'outcome': 0.0}]
+        """
+        if self.object_name and self.object_io[0]['income']:
             self.category += "-收入"
             self.load_model(output_filename=self.output_filename+"-收入")
 
-            self.db_object["row_1"][2] = "收款"
-            self.db_object["row_1"][4] = "银行存款*"
-            self.db_object["row_1"][6] = self.object_io['object_income']
+            # self.db_object["row_1"][2] = "收款"
+            # self.db_object["row_1"][4] = "银行存款*"
+            # self.db_object["row_1"][6] = self.object_io['object_income']
 
-            self.db_object["row_2"][2] = "收款"
-            self.db_object["row_2"][4] = "应收账款"
-            self.db_object["row_2"][5] = self.object_io['_id']
-            self.db_object["row_2"][7] = self.object_io['object_income']
+            sum_income = 0
+            for i, io in enumerate(self.object_io):
+                y, m, d = io['operation_time'].year, io['operation_time'].month, io['operation_time'].day
+                self.db_object["row_{}".format(i+1)][2] = "收款-{}-{}-{}".format(y, m, d)
+                self.db_object["row_{}".format(i+1)][4] = "银行存款*"
+                self.db_object["row_{}".format(i+1)][6] = io['income']
+                sum_income += io['income']
+
+            self.db_object["row_{}".format(len(self.object_io)+1)][2] = "收款"
+            self.db_object["row_{}".format(len(self.object_io)+1)][4] = "应收账款"
+            self.db_object["row_{}".format(len(self.object_io)+1)][5] = self.object_io[0]['object_name']
+            self.db_object["row_{}".format(len(self.object_io)+1)][7] = sum_income
 
             self.write_company_name()
             self.write_end_date()
@@ -74,29 +107,40 @@ class VoucherBankstatement(VoucherBase):
             # self.output()
             self.insert_db()
 
-            log.debug("write object_income {} to voucher".format(self.object_io['object_income']))
-        elif isinstance(self.object_io, list):
-            log.debug('this object is other expense')
+            log.debug("write object_income {} to voucher".format(sum_income))
+        # elif isinstance(self.object_io, list):
+        #     log.debug('this object is other expense')
         else:
-            log.debug("object_income is {}".format(self.object_io['object_income']))
+            log.debug("this object is other expense, skip income() process.")
 
         self.category = "银行凭证"
         return
 
     def outcome(self):
         self.reset_db_object()
-        if self.object_name and self.object_io['object_outcome']:
+        if self.object_name:
+            if not self.object_io[0]['outcome']:
+                log.info("skip! {} bank reocrd outcome is {}".format(self.object_name, self.object_io[0]['outcome']))
+                return
             self.category += "-支出"
             self.load_model(output_filename=self.output_filename+"-支出")
 
-            self.db_object["row_2"][2] = "付款"
-            self.db_object["row_2"][4] = "银行存款*"
-            self.db_object["row_2"][7] = self.object_io['object_outcome']
+            # self.db_object["row_2"][2] = "付款"
+            # self.db_object["row_2"][4] = "银行存款*"
+            # self.db_object["row_2"][7] = self.object_io['object_outcome']
+
+            sum_outcome = 0
+            for i, io in enumerate(self.object_io):
+                y, m, d = io['operation_time'].year, io['operation_time'].month, io['operation_time'].day
+                self.db_object["row_{}".format(i + 2)][2] = "付款-{}-{}-{}".format(y, m, d)
+                self.db_object["row_{}".format(i + 2)][4] = "银行存款*"
+                self.db_object["row_{}".format(i + 2)][7] = io['outcome']
+                sum_outcome += io['outcome']
 
             self.db_object["row_1"][2] = "收款"
             self.db_object["row_1"][4] = "应付账款"
-            self.db_object["row_1"][5] = self.object_io['_id']
-            self.db_object["row_1"][6] = self.object_io['object_outcome']
+            self.db_object["row_1"][5] = self.object_io[0]['object_name']
+            self.db_object["row_1"][6] = sum_outcome
 
             self.write_company_name()
             self.write_end_date()
@@ -107,12 +151,13 @@ class VoucherBankstatement(VoucherBase):
             # self.output()
             self.insert_db()
 
-            log.debug("write object_outcome {} to voucher".format(self.object_io['object_outcome']))
+            log.debug("write object_outcome {} to voucher".format(sum_outcome))
         elif not self.object_name and isinstance(self.object_io, list):
             log.debug('this object is other expense')
             self.other_expense()
         else:
-            log.debug("object_outcome is {}".format(self.object_io['object_outcome']))
+            log.debug("object_outcome is {}".format(self.object_io[0]['outcome']))
+            raise RuntimeError("银行对账单记录无对方名称，且不是list类型")
 
         self.category = "银行凭证"
         return

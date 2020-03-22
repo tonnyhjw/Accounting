@@ -115,12 +115,13 @@ class KingdeeInterface(object):
 
         log.debug("acctid is {}".format(acctid))
         new_record = copy.deepcopy(DEFUALT_KD_RECORD)
-        new_record["facctid"] = acctid
-        new_record["fdate"] = date
-        new_record["fperiod"] = float(date.month)
-        new_record["fnum"] = fnum
-        new_record["fentryid"] = fentryid
-        new_record["fgroup"] = fgroup
+        new_record["facctid"] = acctid                                  # 科目代码
+        new_record["fdate"] = date                                      # 日期
+        new_record["fperiod"] = float(date.month)                       # 会计周期
+        new_record["fnum"] = fnum                                       # 凭证号
+        new_record["fentryid"] = fentryid                               # 行数
+        new_record["fgroup"] = fgroup                                   # 收付转
+        new_record["fexp"] = row[2]                                     # 摘要
 
         # 写入借贷
         assert row[6] != '' or row[7] != '', "Row missing credit debit! row:{}".format(row)
@@ -152,7 +153,7 @@ class KingdeeInterface(object):
         pprint(self.incorrect_acctname)
 
 if __name__ == '__main__':
-    ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2019, 12)
+    ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2020, 1)
     ki.load_vouchers()
     ki.vouchers2records()
     ki.write_dbf()
