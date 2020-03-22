@@ -137,7 +137,7 @@ class VoucherBankstatement(VoucherBase):
                 self.db_object["row_{}".format(i + 2)][7] = io['outcome']
                 sum_outcome += io['outcome']
 
-            self.db_object["row_1"][2] = "收款"
+            self.db_object["row_1"][2] = "付款"
             self.db_object["row_1"][4] = "应付账款"
             self.db_object["row_1"][5] = self.object_io[0]['object_name']
             self.db_object["row_1"][6] = sum_outcome
@@ -163,9 +163,9 @@ class VoucherBankstatement(VoucherBase):
         return
 
     def other_expense(self):
-        self.reset_db_object()
 
         for io in self.object_io:
+            self.reset_db_object()
             self.load_model(output_filename=self.output_filename + "-" + io['_id'])
             if io['_id'] == '手续费':
                 self.category += "-手续费"

@@ -158,7 +158,7 @@ def delete_vouchers_of_range(begin_date, end_date, other_param={}):
     return
 
 if __name__ == '__main__':
-    vocher_sale_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
-    vocher_buy_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
-    vocher_bankstatement_insert('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
-    # build_voucher_excel('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31)
+    vocher_sale_insert('广州南方化玻医疗器械有限公司', 2020, 1, 1, 2020, 1, 31)
+    vocher_buy_insert('广州南方化玻医疗器械有限公司', 2020, 1, 1, 2020, 1, 31)
+    vocher_bankstatement_insert('广州南方化玻医疗器械有限公司', 2020, 1, 1, 2020, 1, 31)
+    # build_voucher_excel('广州南方化玻医疗器械有限公司', 2020, 1, 1, 2020, 1, 31)

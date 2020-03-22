@@ -49,4 +49,4 @@ def delete_bank_and_invoice(company_name, year, month):
 
 if __name__ == '__main__':
     all_excel_insert_db("广州南方化玻医疗器械有限公司")
-    # delete_bank_and_invoice("广州南方化玻医疗器械有限公司", 2019, 12)
+    # delete_bank_and_invoice("广州南方化玻医疗器械有限公司", 2020, 1)
