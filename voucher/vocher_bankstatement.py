@@ -131,6 +131,7 @@ class VoucherBankstatement(VoucherBase):
 
             sum_outcome = 0
             for i, io in enumerate(self.object_io):
+                log.info("i:{}, io:{}".format(i, io))
                 y, m, d = io['operation_time'].year, io['operation_time'].month, io['operation_time'].day
                 self.db_object["row_{}".format(i + 2)][2] = "付款-{}-{}-{}".format(y, m, d)
                 self.db_object["row_{}".format(i + 2)][4] = "银行存款*"

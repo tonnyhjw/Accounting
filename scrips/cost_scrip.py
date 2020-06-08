@@ -1,4 +1,5 @@
-from datetime import datetime
+import datetime
+from dateutil.relativedelta import relativedelta
 from pprint import pprint
 import random
 import os
@@ -15,11 +16,12 @@ from utils.mongoapi import aggregate_data
 
 log = get_logger(__name__, level=10)
 
-def cost(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d, range_btn=0.68, range_top=0.7):
-
+def cost(company_name, year, month, range_btn=0.68, range_top=0.7):
+    begin_date = datetime.datetime(year=year, month=month, day=1)
+    end_date = begin_date + relativedelta(months=+1, minutes=-1)
     match = {"$match": {"company_name": company_name, "invoice_type": "sale",
-                        "billing_date": {"$gte": datetime(begin_y, begin_m, begin_d),
-                                         "$lte": datetime(end_y, end_m, end_d)}}}
+                        "billing_date": {"$gte": begin_date,
+                                         "$lte": end_date}}}
     group = {"$group": {"_id": "$merchandise_name",
                         "sumprice": {"$sum": '$sum_price'},
                         "amount": {"$sum": '$merchandise_amount'}}}
@@ -61,4 +63,4 @@ def cost(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d, range_btn
     return
 
 if __name__ == '__main__':
-    cost('广州南方化玻医疗器械有限公司', 2019, 12, 1, 2019, 12, 31, range_btn=0.7, range_top=0.8)
+    cost('广州南方化玻医疗器械有限公司', 2020, 5, range_btn=0.77, range_top=0.82)

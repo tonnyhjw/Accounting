@@ -63,12 +63,14 @@ class KingdeeInterface(object):
         """处理凭证种所有科目"""
         # pprint(voucher)
         log.debug("building records of voucher {}-{} {}".format(voucher.get('method'), voucher.get('number'), voucher.get('category')))
-        self.build_one_racord(voucher['row_1'], voucher['company_name'], voucher["date"], voucher["number"], 0., voucher["method"])
-        self.build_one_racord(voucher['row_2'], voucher['company_name'], voucher["date"], voucher["number"], 1., voucher["method"])
-        self.build_one_racord(voucher['row_3'], voucher['company_name'], voucher["date"], voucher["number"], 2., voucher["method"])
-        self.build_one_racord(voucher['row_4'], voucher['company_name'], voucher["date"], voucher["number"], 3., voucher["method"])
-        self.build_one_racord(voucher['row_5'], voucher['company_name'], voucher["date"], voucher["number"], 4., voucher["method"])
-        self.build_one_racord(voucher['row_6'], voucher['company_name'], voucher["date"], voucher["number"], 5., voucher["method"])
+        for i in range(9):
+            log.info("i:{} row:{}".format(i,voucher['row_{}'.format(1+i)]))
+            self.build_one_racord(voucher['row_{}'.format(1+i)], voucher['company_name'], voucher["date"], voucher["number"], i, voucher["method"])
+        # self.build_one_racord(voucher['row_2'], voucher['company_name'], voucher["date"], voucher["number"], 1., voucher["method"])
+        # self.build_one_racord(voucher['row_3'], voucher['company_name'], voucher["date"], voucher["number"], 2., voucher["method"])
+        # self.build_one_racord(voucher['row_4'], voucher['company_name'], voucher["date"], voucher["number"], 3., voucher["method"])
+        # self.build_one_racord(voucher['row_5'], voucher['company_name'], voucher["date"], voucher["number"], 4., voucher["method"])
+        # self.build_one_racord(voucher['row_6'], voucher['company_name'], voucher["date"], voucher["number"], 5., voucher["method"])
 
         return
 
@@ -102,14 +104,15 @@ class KingdeeInterface(object):
 
         try:
             acctid = find_acctid(acct_name, company_name)
-        except ValueError:
-            log.info("Encounter ValueError when finding acctid of {}, try to handle special char".format(acct_name))
-            acct_name = self.special_char_handler(acct_name)
-            log.info("new acct_name :{}".format(acct_name))
-            acctid = find_acctid(acct_name, company_name)
-        except:
+        # except ValueError:
+        #     log.info("Encounter ValueError when finding acctid of {}, try to handle special char".format(acct_name))
+        #     acct_name = self.special_char_handler(acct_name)
+        #     log.info("new acct_name :{}".format(acct_name))
+        #     acctid = find_acctid(acct_name, company_name)
+        except Exception as e:
             # 正式版需注释本段，让报错中止程序
             log.info("miss acctid {}".format(acct_name))
+            log.critical("\nerr message:{}".format(e))
             self.incorrect_acctname.append(acct_name)
             return
 
@@ -153,7 +156,7 @@ class KingdeeInterface(object):
         pprint(self.incorrect_acctname)
 
 if __name__ == '__main__':
-    ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2020, 1)
+    ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2020, 5)
     ki.load_vouchers()
     ki.vouchers2records()
     ki.write_dbf()

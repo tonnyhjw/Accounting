@@ -77,7 +77,7 @@ class Xls(ExcelBase):
             row_end = self.sheet_r.nrows
         if end_before_last_row:
             row_end = self.sheet_r.nrows - end_before_last_row
-
+        # print('*'*32, row_end, self.sheet_r.nrows, end_before_last_row)
         for i in range(row_start, row_end, 1):
             yield self.sheet_r.row_values(i)
 

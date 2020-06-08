@@ -155,7 +155,9 @@ class Voucher(Document):
     row_4 = ListField()                         # 第四行
     row_5 = ListField()                         # 第五行
     row_6 = ListField()                         # 第六行
-
+    row_7 = ListField()                         # 第七行
+    row_8 = ListField()                         # 第八行
+    row_9 = ListField()                         # 第九行
 
     def json(self):
         voucher_dict = {
@@ -166,7 +168,10 @@ class Voucher(Document):
             "row_3": self.row_3,
             "row_4": self.row_4,
             "row_5": self.row_5,
-            "row_6": self.row_6
+            "row_6": self.row_6,
+            "row_7": self.row_7,
+            "row_8": self.row_8,
+            "row_9": self.row_9,
         }
         return voucher_dict
 

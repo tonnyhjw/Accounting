@@ -14,14 +14,7 @@ class VoucherBase(object):
         self.category = "未定义凭证"
         self.model_sub_dir = "xlsx_model/记账凭证模板.xlsx"
         self.row_len = 1+7       # list 类型一行由0开始算，但是excel类型一行由1开始算，因此在list类型前加一行，写入excel时调用enumerate即可
-        self.db_object = {
-            "row_1": [""] * self.row_len,
-            "row_2": [""] * self.row_len,
-            "row_3": [""] * self.row_len,
-            "row_4": [""] * self.row_len,
-            "row_5": [""] * self.row_len,
-            "row_6": [""] * self.row_len,
-        }
+        self.reset_db_object()
 
     def load_model(self, output_filename="测试"):
         if not self.model_sub_dir:
@@ -106,6 +99,9 @@ class VoucherBase(object):
             "row_4": [""] * self.row_len,
             "row_5": [""] * self.row_len,
             "row_6": [""] * self.row_len,
+            "row_7": [""] * self.row_len,
+            "row_8": [""] * self.row_len,
+            "row_9": [""] * self.row_len,
         }
 
     def write_category(self):
