@@ -1,4 +1,5 @@
-from utils.models import BankStatement, Bank, Invoice, InitialOpenningBalance, Voucher, AccountBalance, Acctid
+# from utils.models import BankStatement, Bank, Invoice, InitialOpenningBalance, Voucher, AccountBalance, Acctid
+from utils.models_sql import BankStatement, Bank, Invoice, InitialOpenningBalance, Voucher, AccountBalance, Acctid
 from utils.xlsx_utils import Xlsx, Xls
 from utils.configs import PROJECT_ROOT, SINGLE_GRADE, DOUBLE_GRADE, TRIPLE_GRADE, DEFUALT_KD_RECORD
 from utils.helpers import *

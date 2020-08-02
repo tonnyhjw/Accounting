@@ -63,4 +63,4 @@ def cost(company_name, year, month, range_btn=0.68, range_top=0.7):
     return
 
 if __name__ == '__main__':
-    cost('广州南方化玻医疗器械有限公司', 2020, 5, range_btn=0.77, range_top=0.82)
+    cost('广州南方化玻医疗器械有限公司', 2020, 6, range_btn=0.78, range_top=0.82)

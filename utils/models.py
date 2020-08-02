@@ -31,7 +31,8 @@ class Bank(Document):
             "outcome_col": self.outcome_col,
             "income_col": self.income_col,
             "balance_col": self.balance_col,
-            "abstract_col": self.abstract_col
+            "abstract_col": self.abstract_col,
+            "xlsx_dir": self.xlsx_dir
         }
         return bank_dict
 
@@ -61,7 +62,8 @@ class BankStatement(Document):
             "income": self.income,
             "balance": self.balance,
             "abstract": self.abstract,
-            "bank": self.bank
+            "bank": self.bank,
+            "insert_time": self.insert_time
         }
         return bank_statement_dict
 
@@ -105,7 +107,10 @@ class Invoice(Document):
             "sum_price": self.sum_price,
             "tax_rate": self.tax_rate,
             "tax": self.tax,
-            "tax_category_code": self.tax_category_code
+            "tax_category_code": self.tax_category_code,
+            "invoice_type": self.invoice_type,
+            "select_date": self.select_date,
+            "belong_date": self.belong_date,
         }
         return invoice_dict
 
@@ -162,7 +167,15 @@ class Voucher(Document):
     def json(self):
         voucher_dict = {
             "company_name": self.company_name,
-            "date": self.date.strftime("%Y-%m-%d"),
+            "specific": self.specific,
+            "date": self.date,
+            "category": self.category,
+            "number": self.number,
+            "method": self.method,
+            "supervisor": self.supervisor,
+            "reviewer": self.reviewer,
+            "cashier": self.cashier,
+            "producer": self.producer,
             "row_1": self.row_1,
             "row_2": self.row_2,
             "row_3": self.row_3,
@@ -201,8 +214,19 @@ class AccountBalance(Document):
     def json(self):
         account_balance_dict = {
             "company_name": self.company_name,
+            "is_openning_balance": self.is_openning_balance,
             "date": self.date,
-            "subject": "{}-{}-{}".format(self.subject_lv1, self.subject_lv2, self.subject_lv3)
+            "subject_lv1": self.subject_lv1,
+            "subject_lv2": self.subject_lv2,
+            "subject_lv3": self.subject_lv3,
+            "init_balance_debit": self.init_balance_debit,
+            "init_balance_credit": self.init_balance_credit,
+            "cur_amount_debit": self.cur_amount_debit,
+            "cur_amount_credit": self.cur_amount_credit,
+            "this_year_amount_debit": self.this_year_amount_debit,
+            "this_year_amount_credit": self.this_year_amount_credit,
+            "cur_balance_debit": self.cur_balance_debit,
+            "cur_balance_credit": self.cur_balance_credit,
         }
         return account_balance_dict
 
@@ -221,7 +245,9 @@ class Acctid(Document):
         acct_data = {
             "company_name": self.company_name,
             "acctid": self.acctid,
-            "acct_name": self.acct_name
+            "acct_name": self.acct_name,
+            "acct_type": self.acct_type,
+            "balance_direction": self.balance_direction,
         }
         return acct_data
 

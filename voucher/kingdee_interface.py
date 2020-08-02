@@ -104,11 +104,11 @@ class KingdeeInterface(object):
 
         try:
             acctid = find_acctid(acct_name, company_name)
-        # except ValueError:
-        #     log.info("Encounter ValueError when finding acctid of {}, try to handle special char".format(acct_name))
-        #     acct_name = self.special_char_handler(acct_name)
-        #     log.info("new acct_name :{}".format(acct_name))
-        #     acctid = find_acctid(acct_name, company_name)
+        except ValueError:
+            log.info("Encounter ValueError when finding acctid of {}, try to handle special char".format(acct_name))
+            acct_name = self.special_char_handler(acct_name)
+            log.info("new acct_name :{}".format(acct_name))
+            acctid = find_acctid(acct_name, company_name)
         except Exception as e:
             # 正式版需注释本段，让报错中止程序
             log.info("miss acctid {}".format(acct_name))
@@ -156,7 +156,7 @@ class KingdeeInterface(object):
         pprint(self.incorrect_acctname)
 
 if __name__ == '__main__':
-    ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2020, 5)
+    ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2020, 6)
     ki.load_vouchers()
     ki.vouchers2records()
     ki.write_dbf()
