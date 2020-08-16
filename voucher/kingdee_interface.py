@@ -156,7 +156,7 @@ class KingdeeInterface(object):
         pprint(self.incorrect_acctname)
 
 if __name__ == '__main__':
-    ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2020, 6)
+    ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2020, 7)
     ki.load_vouchers()
     ki.vouchers2records()
     ki.write_dbf()

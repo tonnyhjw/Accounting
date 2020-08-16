@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from playhouse.shortcuts import model_to_dict
 
 from utils import *
 
@@ -72,6 +73,7 @@ class VoucherBase(object):
         return
 
     def insert_db(self):
+        """将凭证存入MongoDB"""
         yes = {'yes', 'y', 'ye', ''}
         no = {'no', 'n'}
 
@@ -89,6 +91,35 @@ class VoucherBase(object):
             else:
                 self.insert_db()
         return
+
+    def insert_sql(self):
+        """将凭证存入MariaDB"""
+        yes = {'yes', 'y', 'ye', ''}
+        no = {'no', 'n'}
+
+        self.write_category()
+        log.debug(f"try insert voucher : {self.db_object}")
+
+        if not self.same_voucher_in_current_period().exists():
+            log.debug("Start insert, voucher dose not exist")
+
+        else:
+            log.info("凭证已存在! 请问是否继续？ 输入y/n")
+            # choice = input().lower()
+            # assert choice not in no, "停止运行"
+            # if choice in yes:
+            #     log.info("跳过该凭证")
+            # else:
+            #     self.insert_db()
+        return
+
+    def same_voucher_in_current_period(self):
+        return Voucher.select().where(
+            (Voucher.date.between(self.begin_date, self.end_date)) &
+            (Voucher.company_name == self.company_name) &
+            (Voucher.specific == self.object_name) &
+            (Voucher.category == self.category)
+        )
 
     def reset_db_object(self):
         """用于复位"""

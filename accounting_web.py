@@ -11,8 +11,7 @@ from flask_cors import CORS
 
 from views import *
 from views.login import login_required
-from utils.helper import get_logger
-from utils.configs import current_cfg
+from utils.helpers import get_logger
 
 # production env log level INFO
 log = get_logger(__name__, level=20)
@@ -22,7 +21,6 @@ app = Flask(__name__, static_folder="./dist/static", template_folder="./dist")
 CORS(app)
 api.init_app(app)
 app.config['SWAGGER_UI_JSONEDITOR'] = True
-app.config.from_object(current_cfg)
 
 # *****尝试blueprint 建立请求********
 '''
@@ -30,67 +28,12 @@ from views.reply_template import bp_reply_template
 app.register_blueprint(bp_reply_template)
 '''
 # *************
-from views.change_state import api as change_state_ns
-from views.feedback_statistics import api as feedback_statistics_ns
-from views.keyword import api as keyword_ns
-from views.new_game import api as new_game_ns
-from views.reply import api as reply_ns
-from views.reply_template import api as reply_template_ns
-from views.qa_pop_search_words import ns as qa_pop_search_word_ns
-from views.feedback_type_stats import api as feedback_type_stats_ns
-from views.feedback_qa_handle_stats import api as feedback_qa_handle_stats_ns
-from views.feedback_qa_solve_stats import api as feedback_qa_solve_stats_ns
-from views.feedback_handle_stats import api as feedback_handle_stats_ns
-from views.feedback_solve_stats import api as feedback_solve_stats_ns
-from views.feedback_classic import ns as feedback_classic_ns
-from views.feedback_keyword_monitor import ns as feedback_keyword_monitor_ns
-from views.feedback_keyword_monitor_subscribers import ns as feedback_keyword_monitor_subscribers_ns
-from views.feedback_fbstatsbygame import api as feedback_fbstatsbygame_ns
-from views.feedback_fbsearchgame import api as feedback_fbsearchgame_ns
-from views.feedback_qa import api as feedback_qa_ns
-from views.feedback_cancel import api as feedback_cancel_ns
-from views.excel import api as excel_ns
-from views.exceluuqa import api as exceluuqa_ns
+from views.cost import api as cost_ns
+
 
 blueprint = Blueprint('api', __name__, url_prefix='/api')
 api.init_app(blueprint)
-api.add_namespace(change_state_ns)
-api.add_namespace(feedback_statistics_ns)
-api.add_namespace(keyword_ns)
-api.add_namespace(new_game_ns)
-api.add_namespace(reply_ns)
-api.add_namespace(reply_template_ns)
-api.add_namespace(qa_pop_search_word_ns)
-api.add_namespace(feedback_type_stats_ns)
-api.add_namespace(feedback_qa_handle_stats_ns)
-api.add_namespace(feedback_qa_solve_stats_ns)
-api.add_namespace(feedback_handle_stats_ns)
-api.add_namespace(feedback_solve_stats_ns)
-api.add_namespace(feedback_classic_ns)
-api.add_namespace(feedback_keyword_monitor_ns)
-api.add_namespace(feedback_keyword_monitor_subscribers_ns)
-api.add_namespace(feedback_fbstatsbygame_ns)
-api.add_namespace(feedback_fbsearchgame_ns)
-api.add_namespace(feedback_qa_ns)
-api.add_namespace(feedback_cancel_ns)
-api.add_namespace(excel_ns)
-api.add_namespace(exceluuqa_ns)
-app.register_blueprint(blueprint)
-
-# url
-# api.add_resource(NewGameViewSet, '/api/v1/feedback/newgames')
-# api.add_resource(ReplyViewSet, '/api/v1/feedback/reply')
-# api.add_resource(ChangeStateViewSet, '/api/v1/feedback/changestate')
-# api.add_resource(Keyword, '/api/v1/feedback/keyword')
-# api.add_resource(FeedbackStatistics, '/api/v1/feedback/fbstatistics')
-# api.add_resource(ReplyTemplate, '/api/v1/feedback/replytemplate')
-# api.add_resource(ClassicProblemViewSet, '/api/v1/feedback/classicproblems')
-# api.add_resource(QaPopSearchWords, '/api/v1/feedback/qapopsearchwords')
-# api.add_resource(FeedbackTypeStats, '/api/v1/feedback/fbtypestats')
-# api.add_resource(FeedbackQaHandleStats, '/api/v1/feedback/fbqahandlestats') # TODO: Replace by /fbqasolvestats. Subject to DELETE
-# api.add_resource(FeedbackQaSolveStats, '/api/v1/feedback/fbqasolvestats')
-# api.add_resource(FeedbackHandleStats, '/api/v1/feedback/fbhandlestats')
-# api.add_resource(FeedbackSolveStats, '/api/v1/feedback/fbsolvestats')
+api.add_namespace(cost_ns)
 
 
 #*************************** openid auth ****************************
@@ -192,4 +135,4 @@ def about():
 #*************************** openid auth ****************************
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=30666)
+    app.run(debug=True, host="0.0.0.0", port=30000)

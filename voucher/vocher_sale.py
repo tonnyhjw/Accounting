@@ -1,10 +1,13 @@
 import os
-from datetime import datetime
+import datetime
+from dateutil.relativedelta import relativedelta
 from pprint import pprint
+from peewee import fn
 
 from voucher import *
 from utils import get_logger
 from utils.models import Invoice
+from utils.models_sql import Invoice as InvoiceSql
 from utils.mongoapi import aggregate_data
 
 """
@@ -15,13 +18,14 @@ log = get_logger(__name__, level=10)
 
 class VoucherInvoiceSale(VoucherBase):
 
-    def __init__(self, company_name, object_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
+    def __init__(self, company_name, object_name, year, month):
         super(VoucherInvoiceSale, self).__init__()
         self.category = "销项发票凭证"
         self.company_name = company_name
         self.object_name = object_name
         self.output_dir = os.path.join(self.output_dir, self.company_name)
-        self.begin_date, self.end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
+        self.begin_date = datetime.date(year=year, month=month, day=1)
+        self.end_date = self.begin_date + relativedelta(months=+1, minutes=-1)
         self.load_model(output_filename="销项发票凭证-"+self.object_name)
 
     def sum_price(self):
@@ -41,6 +45,18 @@ class VoucherInvoiceSale(VoucherBase):
         self.db_object["row_2"][2] = "销售收入"
         self.db_object["row_2"][4] = "主营业务收入"
         self.db_object["row_2"][7] = self.sum_price_of_object
+        return
+
+    def sum_price_sql(self):
+        res = InvoiceSql.select(InvoiceSql.sum_price).where(
+            (InvoiceSql.company_name == self.company_name) &
+            (InvoiceSql.object_name == self.object_name) &
+            (InvoiceSql.invoice_type == "sale") &
+            (InvoiceSql.billing_date.between(self.begin_date, self.end_date))
+        )
+        self.sum_price_of_object = sum([i.sum_price for i in res])
+        log.debug(self.sum_price_of_object)
+        
         return
 
     def tax(self):
@@ -88,7 +104,6 @@ class VoucherInvoiceSale(VoucherBase):
         self.transfer_method()
         # self.output()
         self.insert_db()
-
 
 
 

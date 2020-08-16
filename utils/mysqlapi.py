@@ -64,7 +64,7 @@ class BankStatementApi():
         b = BankStatement.delete().where((BankStatement.company_name == self.company) &
                                      (BankStatement.operation_time >= begin_date) &
                                      (BankStatement.operation_time <= end_date)).execute()
-        print(b)
+        log.info(f'delete {b} lines of bank statements.')
         return b
 
 
@@ -163,7 +163,8 @@ class InvoiceSaleApi(InvoiceBaseApi):
         invoices = Invoice.delete().where((Invoice.company_name == self.company_name) &
                                           (Invoice.billing_date >= begin_date) &
                                           (Invoice.billing_date <= end_date)).execute()
-        return invoices
+        log.info(f'delete {invoices} lines of sale invoice.')
+        return
 
 class InvoiceBuyApi(InvoiceBaseApi):
     invoice_code = 1  # 发票代码
@@ -208,6 +209,7 @@ class InvoiceBuyApi(InvoiceBaseApi):
         invoices = Invoice.delete().where((Invoice.company_name == self.company_name) &
                                           (Invoice.belong_date >= begin_date) &
                                           (Invoice.belong_date <= end_date)).execute()
+        log.info(f'delete {invoices} lines of buy invoice.')
         return invoices
 
 class InitialOpenningBalanceApi():

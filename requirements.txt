@@ -25,3 +25,4 @@ Flask-Cors==3.0.8
 Flask-OpenID==1.2.5
 Flask-RESTful==0.3.7
 flask-restplus==0.13.0
+Werkzeug==0.16.1

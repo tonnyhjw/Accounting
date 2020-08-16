@@ -14,7 +14,7 @@ num_in, num_out, num_tran = 1, 1, 1         # 收、付、转
 
 def vocher_sale_insert(company_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
     """从数据库销项发票，生成销项凭证，并存入数据库"""
-    begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d, hour=23, minute=59,second=59)
+    begin_date, end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d, hour=23, minute=59, second=59)
     global num_tran
     pipeline = []
     match = {"$match": {"company_name": company_name, "invoice_type": "sale",
@@ -160,8 +160,8 @@ def delete_vouchers_of_range(begin_date, end_date, other_param={}):
 if __name__ == '__main__':
     input_param = {
          "company_name": '广州南方化玻医疗器械有限公司',
-         "begin_y": 2020, "begin_m": 6, "begin_d": 1,
-         "end_y": 2020, "end_m": 6, "end_d": 30
+         "begin_y": 2020, "begin_m": 7, "begin_d": 1,
+         "end_y": 2020, "end_m": 7, "end_d": 31
     }
     vocher_sale_insert(**input_param)
     vocher_buy_insert(**input_param)

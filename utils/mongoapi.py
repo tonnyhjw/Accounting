@@ -302,11 +302,20 @@ class AcctidApi():
         return
 
 
+# 通用功能
+
 def aggregate_data(table, pipeline):
     return list(table.objects.aggregate(*pipeline))
 
+
+def insert_data(collection, data):
+    assert isinstance(data, dict), 'Incorrect data type. expect dict, got {} instead'.format(type(data))
+    result = collection.insert_many(data)
+
+
 def delete_docs(table, filter):
     return table.objects(**filter).delete()
+
 
 def find_acctid(acct_name, company_name):
     """获取科目代码"""
