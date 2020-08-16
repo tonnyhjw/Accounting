@@ -73,14 +73,14 @@ class InitialOpenningBalance(BaseModel):
 
 class VoucherRow(BaseModel):
     """凭证每一行foreign key"""
-    index_0 = CharField()
-    index_1 = CharField()
-    index_2 = CharField()
-    index_3 = CharField()
-    index_4 = CharField()
-    index_5 = FloatField()
-    index_6 = FloatField()
-    index_7 = FloatField()
+    index_0 = CharField(default='')
+    index_1 = CharField(default='')
+    index_2 = CharField(default='')
+    index_3 = CharField(default='')
+    index_4 = CharField(default='')
+    index_5 = FloatField(default='')
+    index_6 = FloatField(default='')
+    index_7 = FloatField(default='')
 
 
 class Voucher(BaseModel):

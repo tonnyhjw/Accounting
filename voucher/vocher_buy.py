@@ -1,10 +1,12 @@
 import os
-from datetime import datetime
+import datetime
+from dateutil.relativedelta import relativedelta
 from pprint import pprint
 
 from voucher import *
 from utils import get_logger
 from utils.models import Invoice
+from utils.models_sql import Invoice as InvoiceSql, VoucherRow
 from utils.mongoapi import aggregate_data
 
 """
@@ -15,13 +17,14 @@ log = get_logger(__name__, level=10)
 
 class VoucherInvoiceBuy(VoucherBase):
 
-    def __init__(self, company_name, object_name, begin_y, begin_m, begin_d, end_y, end_m, end_d):
+    def __init__(self, company_name, object_name, year, month):
         super(VoucherInvoiceBuy, self).__init__()
         self.category = "进项发票凭证"
         self.company_name = company_name
         self.object_name = object_name
         self.output_dir = os.path.join(self.output_dir, self.company_name)
-        self.begin_date, self.end_date = datetime(begin_y, begin_m, begin_d), datetime(end_y, end_m, end_d)
+        self.begin_date = datetime.date(year=year, month=month, day=1)
+        self.end_date = self.begin_date + relativedelta(months=+1, minutes=-1)
         self.load_model(output_filename="进项发票凭证-"+self.object_name)
 
     def sum_price(self):
@@ -79,17 +82,39 @@ class VoucherInvoiceBuy(VoucherBase):
         self.db_object["row_3"][5] = self.object_name
         self.db_object["row_3"][7] = self.sum_price_of_object+self.tax_of_object
 
+    def sql_rows(self):
+        res = InvoiceSql.select(InvoiceSql.sum_price, InvoiceSql.tax).where(
+            (InvoiceSql.company_name == self.company_name) &
+            (InvoiceSql.object_name == self.object_name) &
+            (InvoiceSql.invoice_type == "buy") &
+            (InvoiceSql.billing_date.between(self.begin_date, self.end_date))
+        )
+        self.sum_price_of_object = sum([i.sum_price for i in res])
+        self.tax_of_object = sum([i.tax for i in res])
+
+        log.debug(f"sum price: {self.sum_price_of_object}, sum tax: {self.tax_of_object}")
+
+        self.db_object["row_2"] = VoucherRow.create(index_2="进项税额", index_4="应交税费",index_5="进项税额",
+                                                    index_6=self.tax_of_object)
+        self.db_object["row_1"] = VoucherRow.create(index_2="购入", index_4="库存商品",
+                                                    index_6=self.sum_price_of_object)
+        self.db_object["row_3"] = VoucherRow.create(index_2="应付", index_4="应付账款", index_5=self.object_name,
+                                                    index_7=self.sum_price_of_object+self.tax_of_object)
+
+
     def build_vocher(self):
         """"""
         self.write_company_name()
         self.write_end_date()
         self.wirte_specific(self.object_name)
-        self.sum_price()
-        self.tax()
-        self.object_loan()
-        self.transfer_method()
-        self.insert_db()
+        self.sql_rows()
+        # self.sum_price()
+        # self.tax()
+        # self.object_loan()
+        # self.insert_db()
         # self.output()
+        self.transfer_method()
+        self.insert_sql()
 
 
 

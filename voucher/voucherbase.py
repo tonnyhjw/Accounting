@@ -102,15 +102,15 @@ class VoucherBase(object):
 
         if not self.same_voucher_in_current_period().exists():
             log.debug("Start insert, voucher dose not exist")
-
+            Voucher.create(**self.db_object)
         else:
             log.info("凭证已存在! 请问是否继续？ 输入y/n")
-            # choice = input().lower()
-            # assert choice not in no, "停止运行"
-            # if choice in yes:
-            #     log.info("跳过该凭证")
-            # else:
-            #     self.insert_db()
+            choice = input().lower()
+            assert choice not in no, "停止运行"
+            if choice in yes:
+                log.info("跳过该凭证")
+            else:
+                self.insert_sql()
         return
 
     def same_voucher_in_current_period(self):
@@ -121,19 +121,22 @@ class VoucherBase(object):
             (Voucher.category == self.category)
         )
 
-    def reset_db_object(self):
+    def reset_db_object(self, db_type='sql'):
         """用于复位"""
-        self.db_object = {
-            "row_1": [""] * self.row_len,
-            "row_2": [""] * self.row_len,
-            "row_3": [""] * self.row_len,
-            "row_4": [""] * self.row_len,
-            "row_5": [""] * self.row_len,
-            "row_6": [""] * self.row_len,
-            "row_7": [""] * self.row_len,
-            "row_8": [""] * self.row_len,
-            "row_9": [""] * self.row_len,
-        }
+        if db_type == 'sql':
+            self.db_object = {}
+        elif db_type == 'mongo':
+            self.db_object = {
+                "row_1": [""] * self.row_len,
+                "row_2": [""] * self.row_len,
+                "row_3": [""] * self.row_len,
+                "row_4": [""] * self.row_len,
+                "row_5": [""] * self.row_len,
+                "row_6": [""] * self.row_len,
+                "row_7": [""] * self.row_len,
+                "row_8": [""] * self.row_len,
+                "row_9": [""] * self.row_len,
+            }
 
     def write_category(self):
         self.db_object["category"] = self.category
