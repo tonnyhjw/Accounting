@@ -344,16 +344,17 @@ def find_acctid(acct_name, company_name):
         log.debug('skip! attc is empty')
         return
 
-    match = {"$match":{"company_name":company_name, "acct_name":acct_name}}
-    project = {"$project": {"acctid": 1, "_id": 0}}
-    pipeline = [match, project]
-    acctid = aggregate_data(Acctid, pipeline)
+    res = Acctid.select().where(
+        (Acctid.company_name == company_name) &
+        (Acctid.acct_name == acct_name)
+    )
+    res = list(res)
 
-    if not acctid:
-        raise ValueError("acctid is {}, Can not find acctid by acct_name : {}".format(acctid, acct_name))
-    assert len(acctid) <= 2, "found more than 1 acctid: {}".format(acctid)
+    if not res:
+        raise ValueError(f"acctid is {res}, Can not find acctid by acct_name : {acct_name}")
+    assert len(res) <= 2, f"found more than 1 acctid: {res}"
 
-    return acctid[0].get('acctid')
+    return res[0].acctid
 
 
 if __name__ == '__main__':
@@ -365,3 +366,4 @@ if __name__ == '__main__':
     # iba.insert_all()
     aa = AcctidApi(company_name="广州南方化玻医疗器械有限公司")
     aa.insert_all()
+

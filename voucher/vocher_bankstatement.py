@@ -158,7 +158,7 @@ class VoucherBankstatement(VoucherBase):
 
             self.db_object[f"row_{len(self.object_io) + 1}"] = VoucherRow.create(index_2="收款",
                                                                                  index_4="应收账款",
-                                                                                 index_5=self.object_io[0].object_name,
+                                                                                 index_5=self.object_name,
                                                                                  index_7=sum_income)
             self.write_company_name()
             self.write_end_date()
@@ -239,7 +239,7 @@ class VoucherBankstatement(VoucherBase):
 
             self.db_object["row_1"] = VoucherRow.create(index_2="付款",
                                                            index_4="应付账款",
-                                                           index_5=self.object_io[0].object_name,
+                                                           index_5=self.object_name,  # todo
                                                            index_6=sum_outcome)
             self.write_company_name()
             self.write_end_date()

@@ -7,10 +7,13 @@ import shutil
 import dbf
 import copy
 import datetime
+from dateutil.relativedelta import relativedelta
+from playhouse.shortcuts import model_to_dict
 from pprint import pprint
 
 from utils import *
-from utils.mongoapi import aggregate_data, find_acctid
+# from utils.mongoapi import aggregate_data, find_acctid #  切换至mysql
+from utils.mysqlapi import find_acctid
 
 log = get_logger(__name__, level=10)
 
@@ -23,6 +26,8 @@ class KingdeeInterface(object):
     def __init__(self, company_name, year, month, customise_output_name=True):
         self.company_name = company_name
         self.year, self.month = year, month
+        self.begin_date = datetime.date(year=year, month=month, day=1)
+        self.end_date = self.begin_date + relativedelta(months=+1, seconds=-1)
         if customise_output_name:
             self.DBF_OUTPUT_FILE = os.path.join(self.DBF_OUTPUT_DIR, "{}{}年{}月.dbf".format(self.company_name, self.year, self.month))
         self._copy_dbf_model()
@@ -48,7 +53,14 @@ class KingdeeInterface(object):
 
         pipeline = [project, match]
         self.vouchers = aggregate_data(Voucher, pipeline)
+        return
 
+    def load_vouchers_sql(self):
+        """读取所有SQL凭证"""
+        self.vouchers = Voucher.select().where(
+            Voucher.date.between(self.begin_date, self.end_date) &
+            Voucher.company_name == self.company_name
+        )
         return
 
     def vouchers2records(self):
@@ -58,14 +70,33 @@ class KingdeeInterface(object):
 
         return
 
+    def vouchers2records_sql(self):
+        for voucher in self.vouchers:
+            log.debug(voucher.company_name)
+            self.build_records_sql(voucher)
+
+        return
+
+    def build_records_sql(self, voucher):
+        voucher = model_to_dict(voucher)
+        log.debug(
+            f"building records of voucher  {voucher.get('specific')} {voucher.get('method')}-{voucher.get('number')} {voucher.get('category')}")
+
+        for i in range(9):
+            if voucher.get(f'row_{1+i}'):
+                log.info(f"i:{i} row:{voucher.get(f'row_{1+i}')}")
+                self.build_one_racord(voucher[f'row_{1+i}'], voucher['company_name'], voucher["date"],
+                                      voucher["number"], i, voucher["method"])
+        return
+
 
     def build_records(self, voucher):
         """处理凭证种所有科目"""
         # pprint(voucher)
-        log.debug("building records of voucher {}-{} {}".format(voucher.get('method'), voucher.get('number'), voucher.get('category')))
+        log.debug(f"building records of voucher{voucher.get('method')}-{voucher.get('number')} {voucher.get('category')}")
         for i in range(9):
-            log.info("i:{} row:{}".format(i,voucher['row_{}'.format(1+i)]))
-            self.build_one_racord(voucher['row_{}'.format(1+i)], voucher['company_name'], voucher["date"], voucher["number"], i, voucher["method"])
+            log.info("i:{} row:{}".format(i,voucher[f'row_{1+i}']))
+            self.build_one_racord(voucher[f'row_{1+i}'], voucher['company_name'], voucher["date"], voucher["number"], i, voucher["method"])
         # self.build_one_racord(voucher['row_2'], voucher['company_name'], voucher["date"], voucher["number"], 1., voucher["method"])
         # self.build_one_racord(voucher['row_3'], voucher['company_name'], voucher["date"], voucher["number"], 2., voucher["method"])
         # self.build_one_racord(voucher['row_4'], voucher['company_name'], voucher["date"], voucher["number"], 3., voucher["method"])
@@ -84,7 +115,14 @@ class KingdeeInterface(object):
 
     def build_one_racord(self, row, company_name, date, fnum, fentryid, fgroup):
         """根据每张凭证每行生成record"""
-        lv1_idx, lv2_idx, acct_name = 4, 5, None
+        # 判断row是来自mongo还是来自sql
+        if isinstance(row, dict):
+            lv1_idx, lv2_idx, acct_name = 'index_4', 'index_5', None
+        elif isinstance(row, list):
+            lv1_idx, lv2_idx, acct_name = 4, 5, None
+        else:
+            raise TypeError(f'row type is incorrect, type: {type(row)}')
+
         if row == [""]*8:
             # 若row为8个空字符，则跳过
             log.debug("This row is empty. Skip")
@@ -124,7 +162,7 @@ class KingdeeInterface(object):
         new_record["fnum"] = fnum                                       # 凭证号
         new_record["fentryid"] = fentryid                               # 行数
         new_record["fgroup"] = fgroup                                   # 收付转
-        new_record["fexp"] = row[2]                                     # 摘要
+        new_record["fexp"] = row[2]       # todo                              # 摘要
 
         # 写入借贷
         assert row[6] != '' or row[7] != '', "Row missing credit debit! row:{}".format(row)
@@ -155,9 +193,20 @@ class KingdeeInterface(object):
         log.critical("record fails")
         pprint(self.incorrect_acctname)
 
+    def run_mongo(self):
+        self.load_vouchers()
+        self.vouchers2records()
+        self.write_dbf()
+        self.fail_records()
+
+    def run_sql(self):
+
+        self.load_vouchers_sql()
+        self.vouchers2records_sql()
+        self.write_dbf()
+        self.fail_records()
+
 if __name__ == '__main__':
     ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2020, 7)
-    ki.load_vouchers()
-    ki.vouchers2records()
-    ki.write_dbf()
-    ki.fail_records()
+    # ki.run_mongo()
+    ki.run_sql()

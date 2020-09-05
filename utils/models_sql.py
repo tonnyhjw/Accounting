@@ -78,7 +78,7 @@ class VoucherRow(BaseModel):
     index_2 = CharField(default='')
     index_3 = CharField(default='')
     index_4 = CharField(default='')
-    index_5 = FloatField(default='')
+    index_5 = CharField(default='')
     index_6 = FloatField(default='')
     index_7 = FloatField(default='')
 
