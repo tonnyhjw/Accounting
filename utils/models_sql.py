@@ -95,15 +95,15 @@ class Voucher(BaseModel):
     reviewer = CharField(null=True)                    # 审核
     cashier = CharField(null=True)                     # 出纳
     producer = CharField(null=True)                    # 制单
-    row_1 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher')                         # 第一行
-    row_2 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher')                         # 第二行
-    row_3 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher')                         # 第三行
-    row_4 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher')                         # 第四行
-    row_5 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher')                         # 第五行
-    row_6 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher')                         # 第六行
-    row_7 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher')                         # 第七行
-    row_8 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher')                         # 第八行
-    row_9 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher')                         # 第九行
+    row_1 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher', on_delete='CASCADE')       # 第一行
+    row_2 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher', on_delete='CASCADE')       # 第二行
+    row_3 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher', on_delete='CASCADE')       # 第三行
+    row_4 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher', on_delete='CASCADE')       # 第四行
+    row_5 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher', on_delete='CASCADE')       # 第五行
+    row_6 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher', on_delete='CASCADE')       # 第六行
+    row_7 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher', on_delete='CASCADE')       # 第七行
+    row_8 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher', on_delete='CASCADE')       # 第八行
+    row_9 = ForeignKeyField(VoucherRow, null=True, default=None, backref='voucher', on_delete='CASCADE')       # 第九行
 
 
 class AccountBalance(BaseModel):
@@ -152,10 +152,10 @@ if __name__ == '__main__':
     # BankStatement.create_table()
     # Invoice.create_table()
     # InitialOpenningBalance.create_table()
-    # VoucherRow.create_table()
-    # Voucher.create_table()
+    VoucherRow.create_table()
+    Voucher.create_table()
     # AccountBalance.create_table()
     # Acctid.create_table()
     from playhouse.shortcuts import model_to_dict
-    Banks = Bank.select()
-    pprint([model_to_dict(bank) for bank in Banks])
+    # vrs = VoucherRow.get()
+    # pprint([vr.voucher.dict() for vr in vrs])

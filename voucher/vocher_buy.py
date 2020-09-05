@@ -24,7 +24,7 @@ class VoucherInvoiceBuy(VoucherBase):
         self.object_name = object_name
         self.output_dir = os.path.join(self.output_dir, self.company_name)
         self.begin_date = datetime.date(year=year, month=month, day=1)
-        self.end_date = self.begin_date + relativedelta(months=+1, minutes=-1)
+        self.end_date = self.begin_date + relativedelta(months=+1, seconds=-1)
         self.load_model(output_filename="进项发票凭证-"+self.object_name)
 
     def sum_price(self):

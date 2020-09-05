@@ -61,13 +61,13 @@ class VoucherBase(object):
 
     def write_company_name(self):
         self.db_object["company_name"] = self.company_name
-        self.model.write_cell(1, 5, self.company_name)
+        # self.model.write_cell(1, 5, self.company_name)
         return
 
     def write_end_date(self):
         try:
             self.db_object["date"] = self.end_date
-            self.model.write_cell(3, 4, "{} 年 {} 月 {} 日".format(self.end_date.year, self.end_date.month, self.end_date.day))
+            # self.model.write_cell(3, 4, "{} 年 {} 月 {} 日".format(self.end_date.year, self.end_date.month, self.end_date.day))
         except Exception as e:
             log.critical(e)
         return
