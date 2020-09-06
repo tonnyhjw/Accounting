@@ -29,7 +29,7 @@ class KingdeeInterface(object):
         self.begin_date = datetime.date(year=year, month=month, day=1)
         self.end_date = self.begin_date + relativedelta(months=+1, seconds=-1)
         if customise_output_name:
-            self.DBF_OUTPUT_FILE = os.path.join(self.DBF_OUTPUT_DIR, "{}{}年{}月.dbf".format(self.company_name, self.year, self.month))
+            self.DBF_OUTPUT_FILE = os.path.join(self.DBF_OUTPUT_DIR, f"{self.company_name}{self.year}年{self.month}月.dbf")
         self._copy_dbf_model()
 
 
@@ -85,8 +85,8 @@ class KingdeeInterface(object):
         for i in range(9):
             if voucher.get(f'row_{1+i}'):
                 log.info(f"i:{i} row:{voucher.get(f'row_{1+i}')}")
-                self.build_one_racord(voucher[f'row_{1+i}'], voucher['company_name'], voucher["date"],
-                                      voucher["number"], i, voucher["method"])
+                self.build_one_racord_sql(voucher[f'row_{1+i}'], voucher['company_name'], voucher["date"],
+                                          voucher["number"], i, voucher["method"])
         return
 
 
@@ -115,13 +115,7 @@ class KingdeeInterface(object):
 
     def build_one_racord(self, row, company_name, date, fnum, fentryid, fgroup):
         """根据每张凭证每行生成record"""
-        # 判断row是来自mongo还是来自sql
-        if isinstance(row, dict):
-            lv1_idx, lv2_idx, acct_name = 'index_4', 'index_5', None
-        elif isinstance(row, list):
-            lv1_idx, lv2_idx, acct_name = 4, 5, None
-        else:
-            raise TypeError(f'row type is incorrect, type: {type(row)}')
+        lv1_idx, lv2_idx, acct_name = 4, 5, None
 
         if row == [""]*8:
             # 若row为8个空字符，则跳过
@@ -178,6 +172,61 @@ class KingdeeInterface(object):
         self.records.append(new_record)
         return
 
+    def build_one_racord_sql(self, row, company_name, date, fnum, fentryid, fgroup):
+        """根据每张凭证每行生成record"""
+        lv1_idx, lv2_idx, acct_name = 'index_4', 'index_5', None
+
+        if row[lv2_idx]:
+            # 若row存在二级科目，则按二级科目选择科目代码
+            log.debug("exist lv2 acct {}".format(row[lv2_idx]))
+            acct_name = row[lv2_idx]
+        elif row[lv1_idx] and not row[lv2_idx]:
+            # 若row不存在二级科目，且存在一级科目，则按一级科目查询科目代码
+            log.debug("lv2 acct not exist, lv1 acct is {}".format(row[lv2_idx]))
+            acct_name = row[lv1_idx]
+        else:
+            # 其余情况报错
+            log.debug("raise ioerror")
+            # raise IOError("acct input missing, row: {}".format(row))
+
+        try:
+            acctid = find_acctid(acct_name, company_name)
+        except ValueError:
+            log.info("Encounter ValueError when finding acctid of {}, try to handle special char".format(acct_name))
+            acct_name = self.special_char_handler(acct_name)
+            log.info("new acct_name :{}".format(acct_name))
+            acctid = find_acctid(acct_name, company_name)
+        except Exception as e:
+            # 正式版需注释本段，让报错中止程序
+            log.info("miss acctid {}".format(acct_name))
+            log.critical("\nerr message:{}".format(e))
+            self.incorrect_acctname.append(acct_name)
+            return
+
+        log.debug("acctid is {}".format(acctid))
+        new_record = copy.deepcopy(DEFUALT_KD_RECORD)
+        new_record["facctid"] = acctid                                  # 科目代码
+        new_record["fdate"] = date                                      # 日期
+        new_record["fperiod"] = float(date.month)                       # 会计周期
+        new_record["fnum"] = fnum                                       # 凭证号
+        new_record["fentryid"] = fentryid                               # 行数
+        new_record["fgroup"] = fgroup                                   # 收付转
+        new_record["fexp"] = row['index_2']       # todo                              # 摘要
+
+        # 写入借贷
+        assert row['index_6'] != 0 or row['index_7'] != 0, "Row missing credit debit! row:{}".format(row)
+        if row['index_6'] != 0 and not row['index_7']:
+            new_record["fdebit"] = row['index_6']
+            new_record["fdc"] = "D"
+            new_record["ffcyamt"] = row['index_6']
+        elif row['index_7'] != 0 and not row['index_6']:
+            new_record["fcredit"] = row['index_7']
+            new_record["fdc"] = "C"
+            new_record["ffcyamt"] = row['index_7']
+
+        self.records.append(new_record)
+        return
+
     @staticmethod
     def special_char_handler(input_str):
         if "(" in input_str or ")" in input_str:
@@ -190,7 +239,7 @@ class KingdeeInterface(object):
         return input_str
 
     def fail_records(self):
-        log.critical("record fails")
+        log.critical("show records failed in building")
         pprint(self.incorrect_acctname)
 
     def run_mongo(self):
@@ -207,6 +256,6 @@ class KingdeeInterface(object):
         self.fail_records()
 
 if __name__ == '__main__':
-    ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2020, 7)
+    ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2020, 8)
     # ki.run_mongo()
     ki.run_sql()

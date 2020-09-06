@@ -146,20 +146,27 @@ class VoucherBankstatement(VoucherBase):
 
     def income_sql(self):
         self.reset_db_object()
-        if self.object_name and self.object_io[0].income:
+        if self.object_name:
             self.category += "-收入"
             sum_income = 0
             for i, io in enumerate(self.object_io):
-                y, m, d = io.operation_time.year, io.operation_time.month, io.operation_time.day
-                self.db_object[f"row_{i + 1}"] = VoucherRow.create(index_2=f"收款-{y}-{m}-{d}",
-                                                                   index_4="银行存款*",
-                                                                   index_6=io.income)
-                sum_income += io.income
+                # 若存在收入才开始制作收入凭证
+                if io.income:
+                    y, m, d = io.operation_time.year, io.operation_time.month, io.operation_time.day
+                    self.db_object[f"row_{i + 1}"] = VoucherRow.create(index_2=f"收款-{y}-{m}-{d}",
+                                                                       index_4="银行存款*",
+                                                                       index_6=io.income)
+                    sum_income += io.income
+            # 若收入总和不为0才开始构建应收账款，避免出现应收为0的凭证。
+            if sum_income:
+                self.db_object[f"row_{len(self.object_io) + 1}"] = VoucherRow.create(index_2="收款",
+                                                                                     index_4="应收账款",
+                                                                                     index_5=self.object_name,
+                                                                                     index_7=sum_income)
+            else:
+                log.info(f'total income of {self.object_name} is {sum_income}, skip!')
+                return
 
-            self.db_object[f"row_{len(self.object_io) + 1}"] = VoucherRow.create(index_2="收款",
-                                                                                 index_4="应收账款",
-                                                                                 index_5=self.object_name,
-                                                                                 index_7=sum_income)
             self.write_company_name()
             self.write_end_date()
             self.wirte_specific(self.object_name)
@@ -224,23 +231,24 @@ class VoucherBankstatement(VoucherBase):
     def outcome_sql(self):
         self.reset_db_object()
         if self.object_name:
-            if not self.object_io[0].outcome:
-                log.info(f"skip! {self.object_name} bank reocrd outcome is {self.object_io[0].outcome}")
-                return
-
             self.category += "-支出"
             sum_outcome = 0
             for i, io in enumerate(self.object_io):
-                y, m, d = io.operation_time.year, io.operation_time.month, io.operation_time.day
-                self.db_object[f"row_{i + 2}"] = VoucherRow.create(index_2=f"付款-{y}-{m}-{d}",
-                                                                   index_4="银行存款*",
-                                                                   index_7=io.outcome)
-                sum_outcome += io.outcome
+                if io.outcome:
+                    y, m, d = io.operation_time.year, io.operation_time.month, io.operation_time.day
+                    self.db_object[f"row_{i + 2}"] = VoucherRow.create(index_2=f"付款-{y}-{m}-{d}",
+                                                                       index_4="银行存款*",
+                                                                       index_7=io.outcome)
+                    sum_outcome += io.outcome
+            if sum_outcome:
+                self.db_object["row_1"] = VoucherRow.create(index_2="付款",
+                                                            index_4="应付账款",
+                                                            index_5=self.object_name,
+                                                            index_6=sum_outcome)
+            else:
+                log.info(f'total income of {self.object_name} is {sum_outcome}, skip!')
+                return
 
-            self.db_object["row_1"] = VoucherRow.create(index_2="付款",
-                                                           index_4="应付账款",
-                                                           index_5=self.object_name,  # todo
-                                                           index_6=sum_outcome)
             self.write_company_name()
             self.write_end_date()
             self.wirte_specific(self.object_name)
