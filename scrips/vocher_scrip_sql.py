@@ -96,11 +96,9 @@ def vocher_bankstatement_insert(company_name, year, month):
 
     for v_num, obj in enumerate(object_names):
         log.debug(f"开始构建{obj.object_name}的银行对账单凭证")  # 获取本月所有购方企业名称
-        if not obj.object_name:     # DEBUG
-            vbs = VoucherBankstatement(company_name, obj.object_name, year, month, num_in, num_out)
-            # vbs.voucher_exist_in_current_period()
-            vbs.build_voucher_sql()
-            num_in, num_out = vbs.num_in, vbs.num_out
+        vbs = VoucherBankstatement(company_name, obj.object_name, year, month, num_in, num_out)
+        vbs.build_voucher_sql()
+        num_in, num_out = vbs.num_in, vbs.num_out
     return
 
 

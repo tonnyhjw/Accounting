@@ -151,7 +151,7 @@ class VoucherBankstatement(VoucherBase):
 
     def income_sql(self):
         self.reset_db_object()
-        if self.object_name:
+        if self.object_name and self.object_io[0].income:
             self.category += "-收入"
             sum_income = 0
             for i, io in enumerate(self.object_io):
@@ -195,10 +195,6 @@ class VoucherBankstatement(VoucherBase):
             self.category += "-支出"
             self.load_model(output_filename=self.output_filename+"-支出")
 
-            # self.db_object["row_2"][2] = "付款"
-            # self.db_object["row_2"][4] = "银行存款*"
-            # self.db_object["row_2"][7] = self.object_io['object_outcome']
-
             sum_outcome = 0
             for i, io in enumerate(self.object_io):
                 log.info("i:{}, io:{}".format(i, io))
@@ -236,6 +232,9 @@ class VoucherBankstatement(VoucherBase):
     def outcome_sql(self):
         self.reset_db_object()
         if self.object_name:
+            if not self.object_io[0].outcome:
+                log.info("skip! {} bank reocrd outcome is {}".format(self.object_name, self.object_io[0].outcome))
+                return
             self.category += "-支出"
             sum_outcome = 0
             for i, io in enumerate(self.object_io):
