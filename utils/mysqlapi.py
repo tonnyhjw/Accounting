@@ -42,15 +42,17 @@ class BankStatementApi():
             log.debug(row)
             if row[0] == '交易时间':
                 continue
-            outcome = 0 if not row[bank_info.outcome_col] else row[bank_info.outcome_col]
-            income = 0 if not row[bank_info.income_col] else row[bank_info.income_col]
+            outcome = 0. if not row[bank_info.outcome_col] else row[bank_info.outcome_col]
+            income = 0. if not row[bank_info.income_col] else row[bank_info.income_col]
             operation_time = self.time_fmt(row[bank_info.operation_time_col])
 
-            log.debug("outcome: {}  income:{}  operation_time: {}  org_operation_time: {}".format(outcome, income, operation_time, row[bank_info.operation_time_col]))
+            log.debug(f"outcome: {outcome} outtype: {type(outcome)}  income:{income} intype: {type(income)}"
+                      f" operation_time: {operation_time}  org_operation_time: {row[bank_info.operation_time_col]}")
 
-            BankStatement.create(company_name=self.company, object_account=row[bank_info.object_account_col], object_name=row[bank_info.object_name_col],
-                          outcome=outcome, income=income, balance=row[bank_info.balance_col],
-                          abstract=row[bank_info.abstract_col], bank=bank_info.bankname, insert_time=datetime.now(), operation_time=operation_time)
+            BankStatement.create(company_name=self.company, object_account=row[bank_info.object_account_col],
+                                 object_name=row[bank_info.object_name_col].strip(),
+                                 outcome=outcome, income=income, balance=row[bank_info.balance_col],
+                                 abstract=row[bank_info.abstract_col], bank=bank_info.bankname, insert_time=datetime.now(), operation_time=operation_time)
         return
 
     @staticmethod
@@ -325,7 +327,7 @@ class AcctidApi():
         return Xlsx(filepath)
 
     def remove_documents_of_company(self):
-        Acctid.delete().where(Acctid.company_name == self.company_name)
+        Acctid.delete().where(Acctid.company_name == self.company_name).execute()
         log.info("delete accids of {}".format(self.company_name))
         return
 

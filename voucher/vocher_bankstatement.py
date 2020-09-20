@@ -2,6 +2,7 @@ import os
 import datetime
 from dateutil.relativedelta import relativedelta
 from playhouse.shortcuts import model_to_dict
+from peewee import fn
 from pprint import pprint
 # from typing import io
 
@@ -23,7 +24,7 @@ class VoucherBankstatement(VoucherBase):
         super(VoucherBankstatement, self).__init__()
         self.category = "银行凭证"
         self.company_name = company_name
-        self.object_name = object_name
+        self.object_name = object_name.strip()
         self.output_dir = os.path.join(self.output_dir, self.company_name)
         self.begin_date = datetime.date(year=year, month=month, day=1)
         self.end_date = self.begin_date + relativedelta(months=+1, seconds=-1)
@@ -71,7 +72,11 @@ class VoucherBankstatement(VoucherBase):
             self.wirte_specific(specific=self.object_name)
         else:
             log.debug("读取无对方名的银行对账单记录")
-            self.object_io = BankStatementSql.select().where(
+            self.object_io = BankStatementSql.select(
+                BankStatementSql.abstract,
+                fn.sum(BankStatementSql.income).alias('sum_income'),
+                fn.sum(BankStatementSql.outcome).alias('sum_outcome')
+            ).where(
                 (BankStatementSql.company_name == self.company_name) &
                 (BankStatementSql.object_name == self.object_name) &
                 (BankStatementSql.operation_time.between(self.begin_date, self.end_date))
@@ -348,8 +353,8 @@ class VoucherBankstatement(VoucherBase):
         for io in self.object_io:
             log.debug(model_to_dict(io))
             self.reset_db_object()
-            row_1 = {'index_6': io.outcome, 'index_7': io.income}
-            row_2 = {'index_6': io.income, 'index_7': io.outcome,
+            row_1 = {'index_6': io.sum_outcome, 'index_7': io.sum_income}
+            row_2 = {'index_6': io.sum_income, 'index_7': io.sum_outcome,
                      'index_4': "银行存款*"}
 
             if io.abstract == '手续费':

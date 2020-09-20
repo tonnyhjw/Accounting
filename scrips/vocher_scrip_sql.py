@@ -96,10 +96,11 @@ def vocher_bankstatement_insert(company_name, year, month):
 
     for v_num, obj in enumerate(object_names):
         log.debug(f"开始构建{obj.object_name}的银行对账单凭证")  # 获取本月所有购方企业名称
-        vbs = VoucherBankstatement(company_name, obj.object_name, year, month, num_in, num_out)
-        # vbs.voucher_exist_in_current_period()
-        vbs.build_voucher_sql()
-        # num_in, num_out = vbs.num_in, vbs.num_out
+        if not obj.object_name:     # DEBUG
+            vbs = VoucherBankstatement(company_name, obj.object_name, year, month, num_in, num_out)
+            # vbs.voucher_exist_in_current_period()
+            vbs.build_voucher_sql()
+            num_in, num_out = vbs.num_in, vbs.num_out
     return
 
 
@@ -130,7 +131,7 @@ if __name__ == '__main__':
          "company_name": '广州南方化玻医疗器械有限公司',
          "year": 2020, "month": 8
     }
-    vocher_sale_insert(**input_param)
-    vocher_buy_insert(**input_param)
+    # vocher_sale_insert(**input_param)
+    # vocher_buy_insert(**input_param)
     vocher_bankstatement_insert(**input_param)
     # build_voucher_excel('广州南方化玻医疗器械有限公司', 2020, 1, 1, 2020, 1, 31)

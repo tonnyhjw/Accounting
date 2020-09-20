@@ -33,9 +33,9 @@ class BankStatement(BaseModel):
     operation_time = DateTimeField(null=False)   # 交易时间
     object_account = CharField(default="")        # 对方账号
     object_name = CharField(default="")           # 对方户名
-    outcome = FloatField(default=0)                 # 支出
-    income = FloatField(default=0)                  # 存入
-    balance = FloatField(null=False)             # 余额
+    outcome = DoubleField(default=0.)                 # 支出
+    income = DoubleField(default=0.)                  # 存入
+    balance = DoubleField(null=False)             # 余额
     abstract = CharField(null=False)           # 摘要
     bank = CharField(null=False)               # 所属银行
     insert_time = DateTimeField(null=False)      # 写入时间
@@ -52,7 +52,7 @@ class Invoice(BaseModel):
     merchandise_name = CharField(null=True)                    # 商品名称
     merchandise_amount = IntegerField(null=True)                     # 数量
     unit_price = FloatField(null=True)                           # 单价
-    sum_price = FloatField(null=False)               # 金额
+    sum_price = DoubleField(null=False)               # 金额
     tax_rate = FloatField(null=True)                             # 税率
     tax = FloatField(null=False)                     # 税额
     tax_category_code = CharField(null=True)                   # 税收分类编码
@@ -79,8 +79,8 @@ class VoucherRow(BaseModel):
     index_3 = CharField(default='')
     index_4 = CharField(default='')
     index_5 = CharField(default='')
-    index_6 = FloatField(default='')
-    index_7 = FloatField(default='')
+    index_6 = DoubleField(default='')
+    index_7 = DoubleField(default='')
 
 
 class Voucher(BaseModel):

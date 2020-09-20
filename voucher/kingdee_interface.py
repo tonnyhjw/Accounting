@@ -58,8 +58,8 @@ class KingdeeInterface(object):
     def load_vouchers_sql(self):
         """读取所有SQL凭证"""
         self.vouchers = Voucher.select().where(
-            Voucher.date.between(self.begin_date, self.end_date) &
-            Voucher.company_name == self.company_name
+            (Voucher.date.between(self.begin_date, self.end_date)) &
+            (Voucher.company_name == self.company_name)
         )
         return
 
@@ -88,7 +88,6 @@ class KingdeeInterface(object):
                 self.build_one_racord_sql(voucher[f'row_{1+i}'], voucher['company_name'], voucher["date"],
                                           voucher["number"], i, voucher["method"])
         return
-
 
     def build_records(self, voucher):
         """处理凭证种所有科目"""
@@ -249,11 +248,11 @@ class KingdeeInterface(object):
         self.fail_records()
 
     def run_sql(self):
-
         self.load_vouchers_sql()
         self.vouchers2records_sql()
         self.write_dbf()
         self.fail_records()
+
 
 if __name__ == '__main__':
     ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2020, 8)

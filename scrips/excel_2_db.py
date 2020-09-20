@@ -73,4 +73,4 @@ if __name__ == '__main__':
     # all_excel_insert_mongo("广州南方化玻医疗器械有限公司")
     # delete_bank_and_invoice_mongo("广州南方化玻医疗器械有限公司", 2020, 7)
     all_excel_insert_sql("广州南方化玻医疗器械有限公司")
-    # delete_bank_and_invoice_sql("广州南方化玻医疗器械有限公司", 2020, 7)
+    # delete_bank_and_invoice_sql("广州南方化玻医疗器械有限公司", 2020, 8)
