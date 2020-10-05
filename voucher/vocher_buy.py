@@ -87,7 +87,7 @@ class VoucherInvoiceBuy(VoucherBase):
             (InvoiceSql.company_name == self.company_name) &
             (InvoiceSql.object_name == self.object_name) &
             (InvoiceSql.invoice_type == "buy") &
-            (InvoiceSql.billing_date.between(self.begin_date, self.end_date))
+            (InvoiceSql.belong_date.between(self.begin_date, self.end_date))
         )
         self.sum_price_of_object = sum([i.sum_price for i in res])
         self.tax_of_object = sum([i.tax for i in res])

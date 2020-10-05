@@ -54,7 +54,7 @@ def vocher_buy_insert(company_name, year, month):
     object_names = Invoice.select().where(
         (Invoice.company_name == company_name) &
         (Invoice.invoice_type == "buy") &
-        (Invoice.billing_date.between(begin_date, end_date))
+        (Invoice.belong_date.between(begin_date, end_date))
     ).group_by(Invoice.object_name)
     # 如果有可插入的凭证，则清除已存在的同时期所有凭证，重新插入凭证。否则中止插入。
     if object_names:
@@ -129,7 +129,7 @@ if __name__ == '__main__':
          "company_name": '广州南方化玻医疗器械有限公司',
          "year": 2020, "month": 8
     }
-    # vocher_sale_insert(**input_param)
-    # vocher_buy_insert(**input_param)
+    vocher_sale_insert(**input_param)
+    vocher_buy_insert(**input_param)
     vocher_bankstatement_insert(**input_param)
     # build_voucher_excel('广州南方化玻医疗器械有限公司', 2020, 1, 1, 2020, 1, 31)
