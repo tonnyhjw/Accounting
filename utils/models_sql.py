@@ -54,7 +54,7 @@ class Invoice(BaseModel):
     unit_price = FloatField(null=True)                           # 单价
     sum_price = DoubleField(null=False)               # 金额
     tax_rate = FloatField(null=True)                             # 税率
-    tax = FloatField(null=False)                     # 税额
+    tax = DoubleField(null=False)                     # 税额
     tax_category_code = CharField(null=True)                   # 税收分类编码
     invoice_type = CharField(null=False)           # 发票类型（销项发票、进项发票等）
     select_date = DateTimeField(null=True)                       # 勾选日期
@@ -150,10 +150,10 @@ if __name__ == '__main__':
     # 连接数据库
     # Bank.create_table()
     # BankStatement.create_table()
-    # Invoice.create_table()
+    Invoice.create_table()
     # InitialOpenningBalance.create_table()
-    VoucherRow.create_table()
-    Voucher.create_table()
+    # VoucherRow.create_table()
+    # Voucher.create_table()
     # AccountBalance.create_table()
     # Acctid.create_table()
     from playhouse.shortcuts import model_to_dict

@@ -377,6 +377,13 @@ class VoucherBankstatement(VoucherBase):
                 row_2['index_2'] = "社保费"
                 row_1['index_4'] = "管理费用"
                 row_1['index_5'] = "社保费"
+            elif io.abstract == '地税':
+                self.category += "-社保费"
+
+                row_1['index_2'] = "社保费"
+                row_2['index_2'] = "社保费"
+                row_1['index_4'] = "管理费用"
+                row_1['index_5'] = "社保费"
             elif io.abstract == 'TG':
                 self.category += "-TG"
 

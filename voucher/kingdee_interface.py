@@ -255,6 +255,6 @@ class KingdeeInterface(object):
 
 
 if __name__ == '__main__':
-    ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2020, 8)
+    ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2020, 9)
     # ki.run_mongo()
     ki.run_sql()
