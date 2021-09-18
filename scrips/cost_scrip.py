@@ -79,7 +79,7 @@ def cost_sql(company_name, year, month, range_btn=0.68, range_top=0.7):
     price, sum_cost = 0, 0
     model_dir = os.path.join(configs.PROJECT_ROOT, "xlsx_model/成本模板.xls")
     output_dir = os.path.join(configs.PROJECT_ROOT, "output")
-    model = xlsx_utils.Xls(model_dir, output_path=f"{output_dir}/cost.xls")
+    model = xlsx_utils.Xls(model_dir, output_path=f"{output_dir}/cost_{year}-{month}.xls")
 
     for i, data in enumerate(datas):
         param = random.uniform(range_btn, range_top)
@@ -105,6 +105,7 @@ def cost_sql(company_name, year, month, range_btn=0.68, range_top=0.7):
     log.info(f"sum cost is {sum_cost}")
     return web_ret
 
+
 if __name__ == '__main__':
     # cost('广州南方化玻医疗器械有限公司', 2020, 7, range_btn=0.78, range_top=0.82)
-    cost_sql('广州南方化玻医疗器械有限公司', 2020, 9, range_btn=0.78, range_top=0.82)
+    cost_sql('广州南方化玻医疗器械有限公司', 2021, 4, range_btn=0.77, range_top=0.82)

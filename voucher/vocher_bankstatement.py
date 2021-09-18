@@ -122,7 +122,7 @@ class VoucherBankstatement(VoucherBase):
             for i, io in enumerate(self.object_io):
                 y, m, d = io['operation_time'].year, io['operation_time'].month, io['operation_time'].day
                 self.db_object["row_{}".format(i+1)][2] = "收款-{}-{}-{}".format(y, m, d)
-                self.db_object["row_{}".format(i+1)][4] = "银行存款*"
+                self.db_object["row_{}".format(i+1)][4] = "广州银行"
                 self.db_object["row_{}".format(i+1)][6] = io['income']
                 sum_income += io['income']
 
@@ -159,7 +159,7 @@ class VoucherBankstatement(VoucherBase):
                 if io.income:
                     y, m, d = io.operation_time.year, io.operation_time.month, io.operation_time.day
                     self.db_object[f"row_{i + 1}"] = VoucherRow.create(index_2=f"收款-{y}-{m}-{d}",
-                                                                       index_4="银行存款*",
+                                                                       index_4="广州银行",
                                                                        index_6=io.income)
                     sum_income += io.income
             # 若收入总和不为0才开始构建应收账款，避免出现应收为0的凭证。
@@ -200,7 +200,7 @@ class VoucherBankstatement(VoucherBase):
                 log.info("i:{}, io:{}".format(i, io))
                 y, m, d = io['operation_time'].year, io['operation_time'].month, io['operation_time'].day
                 self.db_object["row_{}".format(i + 2)][2] = "付款-{}-{}-{}".format(y, m, d)
-                self.db_object["row_{}".format(i + 2)][4] = "银行存款*"
+                self.db_object["row_{}".format(i + 2)][4] = "广州银行"
                 self.db_object["row_{}".format(i + 2)][7] = io['outcome']
                 sum_outcome += io['outcome']
 
@@ -241,7 +241,7 @@ class VoucherBankstatement(VoucherBase):
                 if io.outcome:
                     y, m, d = io.operation_time.year, io.operation_time.month, io.operation_time.day
                     self.db_object[f"row_{i + 2}"] = VoucherRow.create(index_2=f"付款-{y}-{m}-{d}",
-                                                                       index_4="银行存款*",
+                                                                       index_4="广州银行",
                                                                        index_7=io.outcome)
                     sum_outcome += io.outcome
             if sum_outcome:
@@ -328,7 +328,7 @@ class VoucherBankstatement(VoucherBase):
 
             self.db_object["row_1"][6] = io['object_outcome']
             self.db_object["row_1"][7] = io['object_income']
-            self.db_object["row_2"][4] = "银行存款*"
+            self.db_object["row_2"][4] = "广州银行"
             self.db_object["row_2"][6] = io['object_income']
             self.db_object["row_2"][7] = io['object_outcome']
 
@@ -354,7 +354,7 @@ class VoucherBankstatement(VoucherBase):
             self.reset_db_object()
             row_1 = {'index_6': io.sum_outcome, 'index_7': io.sum_income}
             row_2 = {'index_6': io.sum_income, 'index_7': io.sum_outcome,
-                     'index_4': "银行存款*"}
+                     'index_4': "广州银行"}
 
             if io.abstract == '手续费':
                 self.category += "-手续费"
@@ -391,6 +391,15 @@ class VoucherBankstatement(VoucherBase):
                 row_2['index_2'] = "TG"
                 row_1['index_4'] = "应交税费"
                 row_1['index_5'] = "总应交税费"
+
+            elif io.abstract == 'TIPS国税':       # 过往 elif io.abstract ==  'TG' or 'TIPS国税'的表达方式有问题，会导致现金无法识别
+                self.category += "-TG"
+
+                row_1['index_2'] = "TG"
+                row_2['index_2'] = "TG"
+                row_1['index_4'] = "应交税费"
+                row_1['index_5'] = "总应交税费"
+
             elif io.abstract == '现金':
                 self.category += "-现金"
 

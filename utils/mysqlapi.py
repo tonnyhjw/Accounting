@@ -1,6 +1,7 @@
 import os
 from xlrd.xldate import xldate_as_datetime
 from datetime import datetime
+import traceback
 from playhouse.shortcuts import model_to_dict
 
 from utils import *
@@ -290,13 +291,15 @@ class AcctidApi():
     def __init__(self, company_name):
         self.company_name = company_name
 
-    def insert_all(self):
+    def insert_all(self, increment=True):
         if not self.input_dir:
             log.critical("please define input_dir")
             return
         xlsx_dir = os.path.join(PROJECT_ROOT, self.input_dir)
-        # 清空当前公司所有科目代码
-        self.remove_documents_of_company()
+        # 是否先清空当前公司所有科目代码？
+        if not increment:
+            self.remove_documents_of_company()
+
         for filename in os.listdir(xlsx_dir):
             filepath = os.path.join(xlsx_dir, filename)
             log.debug(filepath)
@@ -313,15 +316,28 @@ class AcctidApi():
 
         for row in xl_contents:
             log.debug(row)
-            acctid = row[self.acctid_col].strip()
+            acctid = str(row[self.acctid_col]).strip()
             acct_name = row[self.acct_name_col].strip()
             acct_type = row[self.acct_type_col].strip()
             balance_direction = row[self.balance_direction_col].strip()
 
-            Acctid.create(company_name=self.company_name, acctid=acctid, acct_name=acct_name,
-                          acct_type=acct_type, balance_direction=balance_direction)
+            if not self.acctid_exists(acctid):
+                Acctid.create(company_name=self.company_name, acctid=acctid, acct_name=acct_name,
+                              acct_type=acct_type, balance_direction=balance_direction)
 
         return
+
+    def acctid_exists(self, acctid):
+        query = Acctid.select().where(
+            (Acctid.company_name == self.company_name) &
+            (Acctid.acctid == acctid)
+        )
+        if query.exists():
+            log.debug(f'Acctid {acctid} exist.')
+        else:
+            log.debug(f'New Acctid {acctid}')
+
+        return query.exists()
 
     def read_excel(self, filepath):
         return Xlsx(filepath)
@@ -368,4 +384,6 @@ if __name__ == '__main__':
     # iba.insert_all()
     aa = AcctidApi(company_name="广州南方化玻医疗器械有限公司")
     aa.insert_all()
+    # aa.acctid_not_exists(1231002)
+
 
