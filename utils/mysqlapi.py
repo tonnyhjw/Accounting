@@ -8,6 +8,7 @@ from utils import *
 
 log = get_logger(__name__, level=10)
 
+
 def insert_documents(collection, data=[]):
     try:
         collection.objects.insert(data)
@@ -71,15 +72,13 @@ class BankStatementApi():
         return b
 
 
-
-class InvoiceBaseApi():
+class InvoiceBaseApi:
     input_dir = None
     row_start = 0
     end_before_last_row = 1
 
     def __init__(self, company_name):
         self.company_name = company_name
-
 
     def insert_all(self):
         if not self.input_dir:
@@ -97,6 +96,7 @@ class InvoiceBaseApi():
                 self.insert_one_xlsx(xl_content)
             except Exception as e:
                 log.critical("error occur: {}".format(e))
+                print(traceback.format_exc())
                 continue
 
     def insert_one_xlsx(self, xl_contents):
@@ -161,13 +161,13 @@ class InvoiceSaleApi(InvoiceBaseApi):
                            tax_category_code=previous_row[self.tax_category_code], invoice_type=self.invoice_type)
         return
 
-
     def delete_by_billing_date(self, begin_date, end_date):
         invoices = Invoice.delete().where((Invoice.company_name == self.company_name) &
                                           (Invoice.billing_date >= begin_date) &
                                           (Invoice.billing_date <= end_date)).execute()
         log.info(f'delete {invoices} lines of sale invoice.')
         return
+
 
 class InvoiceBuyApi(InvoiceBaseApi):
     invoice_code = 1  # 发票代码
@@ -186,9 +186,11 @@ class InvoiceBuyApi(InvoiceBaseApi):
     row_start = 3
     end_before_last_row = 0
 
-    def insert_one_xlsx(self, xl_contents):
+    def fmt_belong_date(self):
+        return datetime.strptime(self.xls.sheet_r.row_values(self.belong_date[0])[self.belong_date[1]] + "28", "%Y%m%d")
 
-        belong_date = datetime.strptime(self.xls.sheet_r.row_values(self.belong_date[0])[self.belong_date[1]]+"28", "%Y%m%d")
+    def insert_one_xlsx(self, xl_contents):
+        belong_date = self.fmt_belong_date()
         log.debug("belong date: {}".format(belong_date))
         for row in xl_contents:
             log.debug("row :{}".format(row))
@@ -214,6 +216,31 @@ class InvoiceBuyApi(InvoiceBaseApi):
                                           (Invoice.belong_date <= end_date)).execute()
         log.info(f'delete {invoices} lines of buy invoice.')
         return invoices
+
+
+class ConfirmUsageApi(InvoiceBuyApi):
+    invoice_code = 5  # 发票代码
+    invoice_num = 6  # 发票号码
+    object_name = 9  # 销方企业名称
+    object_tax_num = 8  # 购方税号
+    billing_date = 7  # 开票日期
+    select_date = 16   # 勾选日期
+    belong_date = (0, 1)  # 所属日期
+    sum_price = 10  # 金额
+    tax = 11  # 税额
+    invoice_type = "buy"
+    row_start = 2
+    end_before_last_row = 0
+
+    def fmt_belong_date(self):
+        year_and_month = int(self.xls.sheet_r.row_values(self.belong_date[0])[self.belong_date[1]])
+        return datetime.strptime("{}28".format(year_and_month), "%Y%m%d")
+
+    @staticmethod
+    def time_fmt(input_time):
+        if isinstance(input_time, str):
+            return datetime.strptime(input_time, "%Y-%m-%d %H:%M:%S")
+
 
 class InitialOpenningBalanceApi():
     """
@@ -275,7 +302,6 @@ class InitialOpenningBalanceApi():
                                   cur_balance_credit=row[self.cur_balance_credit])
 
         return
-
 
     def read_excel(self, filepath):
         return Xlsx(filepath)
@@ -351,8 +377,10 @@ class AcctidApi():
 def aggregate_data(table, pipeline):
     return list(table.objects.aggregate(*pipeline))
 
+
 def delete_docs(table, filter):
     return table.delete().where(**filter)
+
 
 def find_acctid(acct_name, company_name):
     """获取科目代码"""

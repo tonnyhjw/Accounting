@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 from utils import *
 from utils import mysqlapi, mongoapi
 
-log = get_logger(__name__, level=10)
+log = get_logger(__name__)
 
 """银行对账单、进项发票、销项发票存入数据库"""
 
@@ -24,7 +24,7 @@ def all_excel_insert_sql(company_name):
     bsa.insert_all()
     isa = mysqlapi.InvoiceSaleApi(company_name)
     isa.insert_all()
-    iba = mysqlapi.InvoiceBuyApi(company_name)
+    iba = mysqlapi.ConfirmUsageApi(company_name)
     iba.insert_all()
     return
 
@@ -73,4 +73,4 @@ if __name__ == '__main__':
     # all_excel_insert_mongo("广州南方化玻医疗器械有限公司")
     # delete_bank_and_invoice_mongo("广州南方化玻医疗器械有限公司", 2020, 7)
     all_excel_insert_sql("广州南方化玻医疗器械有限公司")
-    # delete_bank_and_invoice_sql("广州南方化玻医疗器械有限公司", 2021, 8)
+    # delete_bank_and_invoice_sql("广州南方化玻医疗器械有限公司", 2022, 5)

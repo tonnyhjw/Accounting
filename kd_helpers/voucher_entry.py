@@ -4,6 +4,7 @@
 
 from utils.guiuitl import *
 
+
 class voucherEntry():
     def __init__(self):
         pass

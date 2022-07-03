@@ -13,6 +13,7 @@ log = get_logger(__name__, level=10)
 # 定义凭证编号（全局常量）
 num_in, num_out, num_tran = 1, 1, 1         # 收、付、转
 
+
 def vocher_sale_insert(company_name, year, month):
     """从数据库销项发票，生成销项凭证，并存入数据库"""
     begin_date = datetime.date(year=year, month=month, day=1)
@@ -74,6 +75,7 @@ def vocher_buy_insert(company_name, year, month):
         num_tran = num_tran + 1
     return
 
+
 def vocher_bankstatement_insert(company_name, year, month):
     """从数据库银行对账单，生成银行凭证，并存入数据库"""
     begin_date = datetime.date(year=year, month=month, day=1)
@@ -124,12 +126,15 @@ def delete_vouchers_of_range(begin_date, end_date, other_param=()):
     log.info(f"delete {delete_cnt} vouchers from {begin_date} to {end_date}")
     return
 
+
 if __name__ == '__main__':
     input_param = {
          "company_name": '广州南方化玻医疗器械有限公司',
-         "year": 2021, "month": 8
+         "year": 2022, "month": 5
     }
-    vocher_sale_insert(**input_param)
-    vocher_buy_insert(**input_param)
+    # vocher_sale_i
+    # t(**input_param)
     vocher_bankstatement_insert(**input_param)
-    # build_voucher_excel('广州南方化玻医疗器械有限公司', 2020, 1, 1, 2020, 1, 31)
+    vocher_buy_insert(**input_param)
+    vocher_sale_insert(**input_param)
+

@@ -253,6 +253,8 @@ class VoucherBankstatement(VoucherBase):
                 log.info(f'total income of {self.object_name} is {sum_outcome}, skip!')
                 return
 
+            # pprint(self.db_object)
+
             self.write_company_name()
             self.write_end_date()
             self.wirte_specific(self.object_name)

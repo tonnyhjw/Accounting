@@ -18,6 +18,7 @@ from utils.mongoapi import aggregate_data
 
 log = get_logger(__name__)
 
+
 def cost(company_name, year, month, range_btn=0.68, range_top=0.7):
     begin_date = datetime.datetime(year=year, month=month, day=1)
     end_date = begin_date + relativedelta(months=+1, minutes=-1)
@@ -84,14 +85,14 @@ def cost_sql(company_name, year, month, range_btn=0.68, range_top=0.7):
     for i, data in enumerate(datas):
         param = random.uniform(range_btn, range_top)
         log.debug(data.merchandise_name)
-        cost = data.sumprice*param
+        _cost = data.sumprice*param
         price += data.sumprice
-        sum_cost += cost
+        sum_cost += _cost
         model.write_cell(i + 2, 1, data.merchandise_name)
         model.write_cell(i + 2, 2, data.amount)
-        model.write_cell(i + 2, 4, cost)
+        model.write_cell(i + 2, 4, _cost)
         model.write_cell(i + 2, 5, data.sumprice)
-        web_ret['detail'].append([data.merchandise_name, int(data.amount), cost, float(data.sumprice)])
+        web_ret['detail'].append([data.merchandise_name, int(data.amount), _cost, float(data.sumprice)])
         try:
             model.write_cell(i + 2, 3, data.sumprice * param / float(data.amount))
         except ZeroDivisionError:
@@ -108,4 +109,5 @@ def cost_sql(company_name, year, month, range_btn=0.68, range_top=0.7):
 
 if __name__ == '__main__':
     # cost('广州南方化玻医疗器械有限公司', 2020, 7, range_btn=0.78, range_top=0.82)
-    cost_sql('广州南方化玻医疗器械有限公司', 2021, 4, range_btn=0.77, range_top=0.82)
+    cost_sql('广州南方化玻医疗器械有限公司', 2022, 5, range_btn=0.77, range_top=0.83)
+    from peewee import SqliteDatabase
