@@ -225,11 +225,11 @@ class ConfirmUsageApi(InvoiceBuyApi):
     object_tax_num = 8  # 购方税号
     billing_date = 7  # 开票日期
     select_date = 16   # 勾选日期
-    belong_date = (0, 1)  # 所属日期
+    belong_date = (1, 5)  # 所属日期
     sum_price = 10  # 金额
     tax = 11  # 税额
     invoice_type = "buy"
-    row_start = 2
+    row_start = 3
     end_before_last_row = 0
 
     def fmt_belong_date(self):

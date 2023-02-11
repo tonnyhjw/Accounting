@@ -109,5 +109,4 @@ def cost_sql(company_name, year, month, range_btn=0.68, range_top=0.7):
 
 if __name__ == '__main__':
     # cost('广州南方化玻医疗器械有限公司', 2020, 7, range_btn=0.78, range_top=0.82)
-    cost_sql('广州南方化玻医疗器械有限公司', 2022, 5, range_btn=0.77, range_top=0.83)
-    from peewee import SqliteDatabase
+    cost_sql('广州南方化玻医疗器械有限公司', 2022, 11, range_btn=0.72, range_top=0.80)

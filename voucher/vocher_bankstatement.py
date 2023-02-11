@@ -18,6 +18,7 @@ from utils.mongoapi import aggregate_data
 
 log = get_logger(__name__, level=10)
 
+
 class VoucherBankstatement(VoucherBase):
 
     def __init__(self, company_name, object_name, year, month, num_in, num_out):
