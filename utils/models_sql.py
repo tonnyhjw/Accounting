@@ -2,7 +2,7 @@ from pprint import pprint
 from peewee import *
 
 
-db = MySQLDatabase('Accounting', user='accounting', password='accounting', host='192.168.50.30', port=3306)
+db = MySQLDatabase('Accounting', user='accounting', password='Accounting123!', host='192.168.50.30', port=3306)
 
 db.connect()
 
