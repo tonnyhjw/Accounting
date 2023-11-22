@@ -113,53 +113,45 @@ class InvoiceBaseApi:
 
 
 class InvoiceSaleApi(InvoiceBaseApi):
-    invoice_code = 0  # 发票代码
-    invoice_num = 1  # 发票号码
-    object_name = 2  # 购方企业名称
-    object_tax_num = 3  # 购方税号
-    bank_account = 4  # 银行账号
-    billing_date = 6  # 开票日期
-    merchandise_name = 9  # 商品名称
-    merchandise_amount = 12  # 数量
-    unit_price = 13  # 单价
-    sum_price = 14  # 金额
-    tax_rate = 15  # 税率
-    tax = 16  # 税额
-    tax_category_code = 17  # 税收分类编码
+    invoice_code = 1  # 发票代码
+    invoice_num = 2  # 发票号码
+    invoice_num_digital = 3  # 数电票号码
+    object_name = 7  # 购方企业名称
+    object_tax_num = 6  # 购方税号
+    # bank_account = 4  # 银行账号 todo 新版没有银行账号，考虑如何移除。
+    billing_date = 8  # 开票日期
+    merchandise_name = 11  # 商品名称
+    merchandise_amount = 14  # 数量
+    unit_price = 15  # 单价
+    sum_price = 16  # 金额
+    tax_rate = 17  # 税率
+    tax = 18  # 税额
+    tax_category_code = 9  # 税收分类编码
     input_dir = "input/invoice/sale"
     invoice_type = "sale"
-    row_start = 7
-    end_before_last_row = 2
+    row_start = 2
+    end_before_last_row = 0
 
     def insert_one_xlsx(self, xl_contents):
-        previous_row = []
         for row in xl_contents:
-            if row[self.merchandise_name] == '小计':
-                log.debug("this line is 小计")
+            if row[self.merchandise_name] == '(详见销货清单)':
+                log.debug("this line is (详见销货清单)")
                 continue
 
-            log.debug("p row :{}".format(previous_row))
-            if row[self.invoice_code] and row[self.object_name] and row[self.billing_date]:
-                previous_row = row
-            else:
-                previous_row = previous_row[:self.merchandise_name] + row[self.merchandise_name:]
-            log.debug("n row :{}".format(previous_row))
+            billing_date = datetime.strptime(row[self.billing_date], "%Y-%m-%d %H:%M:%S")
+            merchandise_amount = int(row[self.merchandise_amount]) if row[self.merchandise_amount] else 0
+            unit_price = float(row[self.unit_price]) if row[self.unit_price] else 0
+            sum_price = float(row[self.sum_price]) if row[self.sum_price] else 0
+            tax = float(row[self.tax]) if row[self.tax] else 0
 
-            billing_date = self.time_fmt(previous_row[self.billing_date])
-            merchandise_amount = int(previous_row[self.merchandise_amount]) if previous_row[self.merchandise_amount] else 0
-            unit_price = float(previous_row[self.unit_price]) if previous_row[self.unit_price] else 0
-            sum_price = float(previous_row[self.sum_price]) if previous_row[self.sum_price] else 0
-            tax = float(previous_row[self.tax]) if previous_row[self.tax] else 0
-
-            Invoice.create(company_name=self.company_name, invoice_code=previous_row[self.invoice_code],
-                           invoice_num=previous_row[self.invoice_num],
-                           object_name=previous_row[self.object_name], object_tax_num=previous_row[self.object_tax_num],
-                           bank_account=previous_row[self.bank_account], billing_date=billing_date,
-                           merchandise_name=previous_row[self.merchandise_name],
+            Invoice.create(company_name=self.company_name, invoice_code=row[self.invoice_code],
+                           invoice_num=row[self.invoice_num], invoice_num_digital=row[self.invoice_num_digital],
+                           object_name=row[self.object_name], object_tax_num=row[self.object_tax_num],
+                           billing_date=billing_date,
+                           merchandise_name=row[self.merchandise_name],
                            merchandise_amount=merchandise_amount, unit_price=unit_price,
                            sum_price=sum_price, tax_rate=tax/sum_price, tax=tax,
-                           tax_category_code=previous_row[self.tax_category_code], invoice_type=self.invoice_type)
-        return
+                           tax_category_code=row[self.tax_category_code], invoice_type=self.invoice_type)
 
     def delete_by_billing_date(self, begin_date, end_date):
         invoices = Invoice.delete().where((Invoice.company_name == self.company_name) &
@@ -230,7 +222,7 @@ class ConfirmUsageApi(InvoiceBuyApi):
     tax = 11  # 税额
     invoice_type = "buy"
     row_start = 3
-    end_before_last_row = 0
+    end_before_last_row = 1
 
     def fmt_belong_date(self):
         year_and_month = int(self.xls.sheet_r.row_values(self.belong_date[0])[self.belong_date[1]])

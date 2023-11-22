@@ -130,7 +130,7 @@ def delete_vouchers_of_range(begin_date, end_date, other_param=()):
 if __name__ == '__main__':
     input_param = {
          "company_name": '广州南方化玻医疗器械有限公司',
-         "year": 2022, "month": 12
+         "year": 2023, "month": 10
     }
     # vocher_sale_i
     # t(**input_param)

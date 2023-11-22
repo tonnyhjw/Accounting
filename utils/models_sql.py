@@ -44,7 +44,8 @@ class BankStatement(BaseModel):
 class Invoice(BaseModel):
     company_name = CharField(null=False)           # 公司名称
     invoice_code = CharField(null=False)           # 发票代码
-    invoice_num = CharField(null=False)            # 发票号码
+    invoice_num = CharField(null=True)            # 发票号码
+    invoice_num_digital = CharField(null=True)  # 或者 BigIntegerField, 根据需要选择
     object_name = CharField(null=True)                         # 购方企业名称
     object_tax_num = CharField(null=True)                      # 购方税号
     bank_account = CharField(null=True)                        # 银行账号
@@ -134,7 +135,6 @@ class Acctid(BaseModel):
     balance_direction = CharField()           # 余额方向
 
 
-
 if __name__ == '__main__':
     # b = Bank(bankname="测试银行", starting_line=1, content_sheet=1, operation_time_col=1,
     #          object_account_col=1, object_name_col=1, outcome_col=1, income_col=1,
@@ -150,12 +150,6 @@ if __name__ == '__main__':
     # 连接数据库
     # Bank.create_table()
     # BankStatement.create_table()
-    Invoice.create_table()
-    # InitialOpenningBalance.create_table()
-    # VoucherRow.create_table()
-    # Voucher.create_table()
-    # AccountBalance.create_table()
-    # Acctid.create_table()
-    from playhouse.shortcuts import model_to_dict
-    # vrs = VoucherRow.get()
-    # pprint([vr.voucher.dict() for vr in vrs])
+    # 执行迁移
+    db.create_tables([Invoice], safe=True)
+

@@ -116,3 +116,5 @@ venv.bak/
 *.zip
 *.AIS
 *.dbf
+
+原始数据/
