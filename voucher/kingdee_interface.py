@@ -213,7 +213,7 @@ class KingdeeInterface(object):
         new_record["fexp"] = row['index_2']       # todo                              # 摘要
 
         # 写入借贷
-        assert row['index_6'] != 0 or row['index_7'] != 0, "Row missing credit debit! row:{}".format(row)
+        # assert row['index_6'] != 0 or row['index_7'] != 0, "Row missing credit debit! row:{}".format(row)
         if row['index_6'] != 0 and not row['index_7']:
             new_record["fdebit"] = row['index_6']
             new_record["fdc"] = "D"
@@ -255,5 +255,5 @@ class KingdeeInterface(object):
 
 
 if __name__ == '__main__':
-    ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2023, 10)
+    ki = KingdeeInterface('广州南方化玻医疗器械有限公司', 2024, 1)
     ki.run_sql()

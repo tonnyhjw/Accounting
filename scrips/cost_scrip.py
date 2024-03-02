@@ -108,5 +108,9 @@ def cost_sql(company_name, year, month, range_btn=0.68, range_top=0.7):
 
 
 if __name__ == '__main__':
-    # cost('广州南方化玻医疗器械有限公司', 2020, 7, range_btn=0.78, range_top=0.82)
-    cost_sql('广州南方化玻医疗器械有限公司', 2023, 9, range_btn=0.77, range_top=0.83)
+    threshold = 816022.56
+    while True:
+        new_web_ret = cost_sql('广州南方化玻医疗器械有限公司', 2024, 1, range_btn=0.76, range_top=0.80)
+        if new_web_ret.get("sum_cost") >= threshold:
+            break
+
